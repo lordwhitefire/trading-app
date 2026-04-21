@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import os
 import google.generativeai as genai
+import json
 
 router = APIRouter(prefix="/api/translator")
 
@@ -17,7 +18,14 @@ async def translate_strategy(text: dict):
     
     try:
         response = model.generate_content(prompt)
-        parsed_response = response.text.strip()
+        raw = response.text.strip()
+        
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        
+        parsed_response = json.loads(raw)
         
         conditions = []
         for condition in parsed_response['conditions']:
