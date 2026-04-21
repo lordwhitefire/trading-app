@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import os
+import requests
 
 router = APIRouter(prefix="/api/translator")
 
