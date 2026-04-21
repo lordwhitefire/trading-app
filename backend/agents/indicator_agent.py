@@ -1,4 +1,10 @@
-from backend.engine.indicator_engine import calculate_indicators
+from crewai import Agent
 
-def indicator_agent(df, conditions):
-    return calculate_indicators(df, conditions)
+def get_indicator_agent(llm):
+    return Agent(
+        role="Indicator Analyst",
+        goal="Analyze which indicators contributed most to wins and losses in the backtest results",
+        backstory="You are an expert technical analyst with 20 years of experience analyzing trading indicators and their performance across different market conditions",
+        llm=llm,
+        verbose=True
+    )

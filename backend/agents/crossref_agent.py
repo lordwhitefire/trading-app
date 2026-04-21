@@ -1,5 +1,10 @@
-from backend.models.signal import Signal
+from crewai import Agent
 
-def crossref_agent(signals):
-    # Placeholder for crossref logic
-    pass
+def get_crossref_agent(llm):
+    return Agent(
+        role="Cross Reference Analyst",
+        goal="Find overlapping signals across multiple strategies and identify which strategy fits which market condition",
+        backstory="You are a multi-strategy portfolio analyst who specializes in finding correlations and conflicts between different trading strategies",
+        llm=llm,
+        verbose=True
+    )
