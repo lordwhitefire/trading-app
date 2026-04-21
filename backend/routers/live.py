@@ -7,6 +7,9 @@ router = APIRouter(prefix="/api/live")
 @router.post("/")
 async def get_live_signal(strategy: Strategy):
     try:
+        from backend.engine.data_fetcher import fetch_ohlcv
+        from datetime import datetime, timedelta
+        
         df = fetch_ohlcv(strategy.coin, strategy.timeframe, datetime.now() - timedelta(days=1), datetime.now())
         signal = generate_live_signal(strategy, df)
         return signal
