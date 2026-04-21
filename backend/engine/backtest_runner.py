@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from backend.engine.data_fetcher import fetch_ohlcv
 from backend.engine.indicator_engine import calculate_indicators
 from backend.engine.condition_evaluator import evaluate_conditions
-from backend.models.strategy import Strategy, Signal
+from backend.models.strategy import Strategy
+from backend.models.signal import Signal
 
 def run_backtest(strategy):
     end_date = datetime.today()
