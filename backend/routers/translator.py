@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import os
-import requests
+import google.generativeai as genai
 
 router = APIRouter(prefix="/api/translator")
 
@@ -10,20 +10,17 @@ async def translate_strategy(text: dict):
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not set")
     
-    url = "https://api.gemini.com/translate"
-    headers = {'Authorization': f'Bearer {GEMINI_API_KEY}'}
-    payload = {
-        'text': text['text'],
-        'response_format': '{"conditions": [{"indicator": str, "operator": str, "value": float, "period": optional int, "explanation": str}], "summary": str}'
-    }
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    
+    prompt = f"Translate the following strategy text into valid JSON with this structure: {{\"conditions\": [{{\"indicator\": str, \"operator\": str, \"value\": float, \"period\": optional int, \"explanation\": str}}], \"summary\": str}}\n\n{text['text']}"
     
     try:
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
+        response = model.generate_content(prompt)
+        parsed_response = response.text.strip()
         
         conditions = []
-        for condition in data['conditions']:
+        for condition in parsed_response['conditions']:
             conditions.append({
                 'indicator': condition['indicator'],
                 'operator': condition['operator'],
@@ -34,7 +31,7 @@ async def translate_strategy(text: dict):
         
         return {
             'conditions': conditions,
-            'summary': data['summary']
+            'summary': parsed_response['summary']
         }
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
