@@ -1,37 +1,18 @@
-import os
 import pandas as pd
 import pandas_ta as ta
 
-# Retrieve API key from environment variable
-SOSOVALUE_API_KEY = os.getenv("SOSOVALUE_API_KEY")
-
 def calculate_indicators(df, conditions):
-    """
-    Calculates technical indicators using pandas-ta.
-    
-    :param df: pandas DataFrame with OHLCV data
-    :param conditions: list of Condition objects
-    :return: pandas DataFrame with all indicator columns added
-    """
     for condition in conditions:
         try:
-            if hasattr(ta, condition.name):
-                method = getattr(ta, condition.name)
-                if 'period' in condition.__dict__:
-                    df[condition.name] = method(df, length=condition.period)
-                else:
-                    df[condition.name] = method(df)
+            if condition.period:
+                indicator_func = getattr(ta, condition.indicator)
+                df[condition.indicator] = indicator_func(df, length=condition.period)
             else:
-                raise ValueError(f"Unsupported indicator: {condition.name}")
-        except Exception as e:
-            print(f"Error calculating {condition.name}: {e}")
-    
+                indicator_func = getattr(ta, condition.indicator)
+                df[condition.indicator] = indicator_func(df)
+        except AttributeError as e:
+            raise Exception(f"Unsupported indicator: {condition.indicator}") from e
     return df
 
 def get_available_indicators():
-    """
-    Returns a list of all available indicator names in pandas-ta.
-    
-    :return: list of str
-    """
-    return [name for name in dir(ta) if callable(getattr(ta, name)) and not name.startswith("__")]
+    return [attr for attr in dir(ta) if callable(getattr(ta, attr)) and not attr.startswith('_')]
