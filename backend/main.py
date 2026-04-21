@@ -1,21 +1,11 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import backtest.router as backtest_router
-import live.router as live_router
-import news.router as news_router
-import etf.router as etf_router
-import translator.router as translator_router
+import uvicorn
 
-app = FastAPI()
+from backend.routers import backtest, live, news, etf, translator
 
-# Include routers
-app.include_router(backtest_router.router)
-app.include_router(live_router.router)
-app.include_router(news_router.router)
-app.include_router(etf_router.router)
-app.include_router(translator_router.router)
+app = FastAPI(title="AlphaDesk")
 
-# Add CORS middleware to allow requests from any origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,12 +14,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Root endpoint for health check
-@app.get("/")
-async def root():
-    return {"message": "AlphaDesk is up and running!"}
+app.include_router(backtest.router)
+app.include_router(live.router)
+app.include_router(news.router)
+app.include_router(etf.router)
+app.include_router(translator.router)
 
-# Run the app using uvicorn
+@app.get("/")
+def health_check():
+    return {"status": "AlphaDesk is running"}
+
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
