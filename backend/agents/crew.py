@@ -36,5 +36,5 @@ def run_analysis(backtest_results):
         verbose=True
     )
     
-    result = crew.run()
+    result = crew.kickoff()
     return str(result)
