@@ -1,9 +1,18 @@
 from pydantic import BaseModel
-from datetime import datetime
+from typing import List
 
 class Signal(BaseModel):
-    timestamp: datetime.datetime
-    entry_price: float
-    exit_price: float
-    pnl: float
+    date: str
+    coin: str
+    price: float
+    conditions_met: List[str]
     outcome: str
+    duration: int
+    pnl: float
+
+class LiveSignal(BaseModel):
+    coin: str
+    price: float
+    time: str
+    conditions_triggered: List[str]
+    confidence_score: float
