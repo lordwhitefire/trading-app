@@ -1,11 +1,11 @@
-from fastapi import APIRouter
-from backend.engine.data_fetcher import fetch_etf_data
+from fastapi import APIRouter, HTTPException
 
-router = APIRouter()
+router = APIRouter(prefix="/api/etf")
 
-@router.get("/etf")
-async def etf():
-    data = fetch_etf_data()
-    if data is None:
-        return {"error": "Failed to fetch ETF data"}
-    return {"data": data}
+@router.get("/")
+async def get_etf_data():
+    try:
+        etf_data = fetch_etf_data()
+        return etf_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

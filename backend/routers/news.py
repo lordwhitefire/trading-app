@@ -1,11 +1,11 @@
-from fastapi import APIRouter
-from backend.engine.data_fetcher import fetch_news
+from fastapi import APIRouter, HTTPException
 
-router = APIRouter()
+router = APIRouter(prefix="/api/news")
 
-@router.get("/news/{coin}")
-async def news(coin: str):
-    articles = fetch_news(coin)
-    if articles is None:
-        return {"error": "Failed to fetch news"}
-    return {"articles": articles}
+@router.get("/{coin}")
+async def get_news(coin: str):
+    try:
+        news = fetch_news(coin)
+        return news
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
