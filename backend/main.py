@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from backend.routers import backtest, live, news, etf, translator
+from backend.routers import backtest, live, news, etf, translator, indicators
 
 app = FastAPI(title="AlphaDesk")
 
@@ -19,6 +19,7 @@ app.include_router(live.router)
 app.include_router(news.router)
 app.include_router(etf.router)
 app.include_router(translator.router)
+app.include_router(indicators.router)
 
 @app.get("/")
 def health_check():
