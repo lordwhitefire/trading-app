@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 interface AppState {
   strategies: any[];
@@ -18,4 +18,5 @@ const useStore = create<AppState>((set) => ({
   addLiveSignal: (signal) => set((state) => ({ liveSignals: [...state.liveSignals, signal] })),
 }));
 
+export { useStore };
 export default useStore;

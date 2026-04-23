@@ -4,12 +4,12 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useStore } from '@/lib/store';
 
-export default function MonthlyChart({ results }) {
+export default function MonthlyChart({ results }: { results?: any }) {
   const { backtestResults } = useStore();
 
   if (!backtestResults) return <div>Loading...</div>;
 
-  const data = backtestResults.signals.map((signal, index) => ({
+  const data = backtestResults.signals.map((signal: any, index: number) => ({
     month: `Month ${index + 1}`,
     wins: signal.wins,
     losses: signal.losses

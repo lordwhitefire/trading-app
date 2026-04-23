@@ -3,7 +3,7 @@
 import React from 'react';
 import { useStore } from '@/lib/store';
 
-export default function TimeHeatmap({ results }) {
+export default function TimeHeatmap({ results }: { results?: any }) {
   const { backtestResults } = useStore();
 
   if (!backtestResults) return <div>Loading...</div>;
@@ -11,7 +11,7 @@ export default function TimeHeatmap({ results }) {
   const data = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let day = 0; day < 7; day++) {
-      const pnl = backtestResults.signals.find(signal => signal.time.getHours() === hour && signal.time.getDay() === day)?.pnl || 0;
+      const pnl = backtestResults.signals.find((signal: any) => signal.time.getHours() === hour && signal.time.getDay() === day)?.pnl || 0;
       data.push({ hour, day, pnl });
     }
   }

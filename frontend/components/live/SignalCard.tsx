@@ -1,25 +1,54 @@
 'use client';
 
 import React from 'react';
-import { useStore } from '@/lib/store';
 
-export default function SignalCard({ signal }) {
-  const { backtestResults } = useStore();
+interface Signal {
+  coin: string;
+  direction: 'LONG' | 'SHORT';
+  entryPrice: number;
+  confidence: number;
+  timestamp: string;
+}
 
-  if (!signal) return <div>Loading...</div>;
-
-  const confidenceScore = (backtestResults[signal.strategy].signals.find(s => s.time === signal.time)?.confidence_score || 0) * 100;
+export default function SignalCard({ signal }: { signal: Signal }) {
+  const isLong = signal.direction === 'LONG';
 
   return (
-    <div className="bg-gray-800 p-4 rounded mb-2 flex items-center justify-between">
-      <div>
-        <p>Coin: {signal.coin}</p>
-        <p>Price: ${signal.price.toFixed(2)}</p>
-        <p>Time: {signal.time.toLocaleString()}</p>
-        <p>Conditions Triggered: {signal.conditions_triggered.join(', ')}</p>
+    <div className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-xl p-4 mb-3">
+      {/* Top row: coin + direction + timestamp */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="bg-[#1F1F1F] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            {signal.coin}
+          </span>
+          <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${isLong
+              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+            {signal.direction}
+          </span>
+        </div>
+        <span className="text-[#4B5563] text-xs font-mono">{signal.timestamp}</span>
       </div>
-      <div className="bg-green-500 text-white px-4 py-2 rounded">
-        Confidence Score: {confidenceScore.toFixed(2)}%
+
+      {/* Bottom row: entry price + confidence */}
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">
+            Entry Price
+          </p>
+          <p className="text-white font-mono text-2xl font-light tracking-tight">
+            ${signal.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">
+            Confidence
+          </p>
+          <p className="text-[#FACC15] font-mono text-lg font-semibold">
+            {signal.confidence}%
+          </p>
+        </div>
       </div>
     </div>
   );

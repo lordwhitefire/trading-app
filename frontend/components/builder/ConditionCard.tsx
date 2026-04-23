@@ -3,50 +3,64 @@
 import React from 'react';
 
 interface ConditionCardProps {
+  index: number;
   indicator: string;
   operator: string;
-  value: number;
-  period?: number;
-  explanation: string;
+  value: string;
   onRemove: () => void;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: string) => void;
 }
 
-export default function ConditionCard({ indicator, operator, value, period, explanation, onRemove, onChange }: ConditionCardProps) {
+const INDICATORS = ['RSI', 'MACD', 'EMA 9', 'EMA 20', 'EMA 50', 'EMA 200', 'SMA 50', 'SMA 200', 'Bollinger Bands', 'Volume', 'ATR'];
+const OPERATORS = ['<', '>', '=', 'crosses above', 'crosses below'];
+
+export default function ConditionCard({ index, indicator, operator, value, onRemove, onChange }: ConditionCardProps) {
   return (
-    <div className="bg-gray-800 p-4 rounded mb-2 flex items-center justify-between">
-      <div>
-        <p>{indicator}</p>
+    <div className="bg-[#111111] border border-[#1F1F1F] rounded-lg p-4 mb-3">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#FACC15] border border-[#FACC15]/30 bg-[#FACC15]/10 px-2 py-0.5 rounded">
+          Condition {String(index + 1).padStart(2, '0')}
+        </span>
+        <button
+          onClick={onRemove}
+          className="text-red-500/60 hover:text-red-500 transition-colors p-1"
+          aria-label="Remove condition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14H6L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4h6v2" />
+          </svg>
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <select
+          value={indicator}
+          onChange={(e) => onChange('indicator', e.target.value)}
+          className="bg-[#0D0D0D] border border-[#1F1F1F] text-white text-sm rounded px-3 py-2 focus:outline-none focus:border-[#FACC15] transition-colors appearance-none cursor-pointer"
+        >
+          {INDICATORS.map((ind) => (
+            <option key={ind} value={ind}>{ind}</option>
+          ))}
+        </select>
         <select
           value={operator}
           onChange={(e) => onChange('operator', e.target.value)}
-          className="border rounded px-2 py-1"
+          className="bg-[#0D0D0D] border border-[#1F1F1F] text-white text-sm rounded px-3 py-2 focus:outline-none focus:border-[#FACC15] transition-colors appearance-none cursor-pointer"
         >
-          <option value="greater_than">Greater Than</option>
-          <option value="less_than">Less Than</option>
-          <option value="crosses_above">Crosses Above</option>
-          <option value="crosses_below">Crosses Below</option>
+          {OPERATORS.map((op) => (
+            <option key={op} value={op}>{op}</option>
+          ))}
         </select>
-        {period && (
-          <input
-            type="number"
-            value={period}
-            onChange={(e) => onChange('period', parseInt(e.target.value))}
-            className="border rounded px-2 py-1 ml-2"
-            placeholder="Period"
-          />
-        )}
         <input
-          type="number"
+          type="text"
           value={value}
-          onChange={(e) => onChange('value', parseFloat(e.target.value))}
-          className="border rounded px-2 py-1 ml-2"
+          onChange={(e) => onChange('value', e.target.value)}
+          className="bg-[#0D0D0D] border border-[#1F1F1F] text-white text-sm rounded px-3 py-2 focus:outline-none focus:border-[#FACC15] transition-colors"
           placeholder="Value"
         />
       </div>
-      <button onClick={onRemove} className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded">
-        Remove
-      </button>
     </div>
   );
 }

@@ -1,19 +1,27 @@
 import React from 'react';
-import '../globals.css';
+import './globals.css';
 import Navbar from '@/components/shared/Navbar';
 
-export default function RootLayout({ children }) {
+export const metadata = {
+  title: 'AlphaDesk',
+  description: 'AI-powered trading strategy builder and backtesting platform',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AlphaDesk</title>
-        <meta name="description" content="AI-powered trading strategy analysis" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="bg-gray-900 text-white">
+      <body className="bg-black text-white antialiased">
         <Navbar />
-        {children}
+        {/* pb-20 on mobile so bottom nav doesn't cover content */}
+        <main className="md:pb-0 pb-20">
+          {children}
+        </main>
       </body>
     </html>
   );
