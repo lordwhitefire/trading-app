@@ -1,5 +1,28 @@
-.aider*
+# Dependencies
 node_modules/
 frontend/package-lock.json
-__pycache__/
+
+# Environment files
 .env
+.env.local
+.env.production
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Aider
+.aider*
+
+# OS
+.DS_Store
+Thumbs.db

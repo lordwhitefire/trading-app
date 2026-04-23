@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#00363e",
+                        "accent": "#FACC15",
+                        "surface-elevated": "#141414",
+                        "on-background": "#ebe2d0",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "danger": "#EF4444",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-secondary": "#2f3131",
+                        "surface-variant": "#393428",
+                        "surface-container-highest": "#393428",
+                        "border": "#1F1F1F",
+                        "on-surface": "#ebe2d0",
+                        "on-tertiary-fixed": "#001f25",
+                        "on-primary-fixed-variant": "#574500",
+                        "primary-fixed-dim": "#eec200",
+                        "text-primary": "#FFFFFF",
+                        "tertiary": "#c7f5ff",
+                        "on-error": "#690005",
+                        "accent-hover": "#FDE047",
+                        "tertiary-container": "#33e4ff",
+                        "on-surface-variant": "#d1c6ab",
+                        "surface-container": "#231f14",
+                        "surface": "#0D0D0D",
+                        "surface-container-high": "#2e2a1e",
+                        "secondary-fixed": "#e2e2e2",
+                        "surface-container-lowest": "#110e05",
+                        "on-primary": "#3c2f00",
+                        "background": "#000000",
+                        "tertiary-fixed-dim": "#15daf4",
+                        "text-secondary": "#9CA3AF",
+                        "on-secondary-container": "#b4b5b5",
+                        "surface-dim": "#171309",
+                        "surface-bright": "#3e392d",
+                        "surface-container-low": "#1f1b11",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#ffe083",
+                        "primary-container": "#facc15",
+                        "inverse-primary": "#735c00",
+                        "success": "#22C55E",
+                        "inverse-surface": "#ebe2d0",
+                        "secondary-container": "#454747",
+                        "outline-variant": "#4d4632",
+                        "primary": "#ffecb9",
+                        "secondary": "#c6c6c7",
+                        "on-tertiary-fixed-variant": "#004e59",
+                        "on-tertiary-container": "#006270",
+                        "inverse-on-surface": "#353024",
+                        "outline": "#9a9078",
+                        "text-muted": "#4B5563",
+                        "on-primary-fixed": "#231b00",
+                        "tertiary-fixed": "#a0efff",
+                        "input-bg": "#111111",
+                        "on-primary-container": "#6c5700",
+                        "surface-tint": "#eec200",
+                        "border-hover": "#2E2E2E"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-p": "1.5rem",
+                        "page-px": "1.5rem",
+                        "section-gap": "2rem",
+                        "max-width": "1280px",
+                        "stack-gap": "2.5rem",
+                        "page-py": "2rem"
+                    },
+                    "fontFamily": {
+                        "h1": ["Inter"],
+                        "display": ["Inter"],
+                        "h2": ["Inter"],
+                        "body": ["Inter"],
+                        "data-lg": ["monospace"],
+                        "data-sm": ["monospace"],
+                        "caption": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h1": ["30px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display": ["60px", {"lineHeight": "1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "data-lg": ["30px", {"lineHeight": "1", "fontWeight": "400"}],
+                        "data-sm": ["14px", {"lineHeight": "1", "fontWeight": "400"}],
+                        "caption": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body text-body bg-background">
+<!-- TopAppBar Section -->
+<header class="sticky top-0 w-full border-b border-[#1F1F1F] z-50 bg-black/90 backdrop-blur-md">
+<div class="max-w-[1280px] mx-auto flex justify-between items-center px-6 h-16">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-yellow-400" data-icon="terminal">terminal</span>
+<span class="text-xl font-black text-yellow-400 tracking-tighter uppercase font-inter">AlphaDesk</span>
+</div>
+<button class="text-yellow-400">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</header>
+<main class="max-w-[1280px] mx-auto px-page-px py-page-py space-y-section-gap">
+<!-- AI Strategy Translator Section -->
+<section class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="text-h2 font-h2 text-primary">✨ AI Strategy Translator</span>
+</div>
+<div class="bg-surface border border-border p-card-p rounded-lg space-y-4">
+<textarea class="w-full h-32 bg-input-bg border border-border rounded p-4 text-white placeholder-text-muted focus:border-accent focus:ring-1 focus:ring-accent/40 outline-none transition-all resize-none font-body" placeholder="Describe your strategy in plain English... (e.g., Buy BTC when RSI is below 30 and price is above 200 EMA)"></textarea>
+<button class="w-full bg-accent text-black font-bold py-3 rounded uppercase tracking-wider hover:bg-accent-hover transition-transform active:scale-[0.98] flex items-center justify-center gap-2">
+                    Translate
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Strategy Form Section -->
+<section class="space-y-4">
+<h2 class="text-h2 font-h2 text-primary">Strategy Form</h2>
+<div class="bg-surface border border-border p-card-p rounded-lg space-y-6">
+<!-- Basic Inputs -->
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-text-secondary uppercase">Strategy Name</label>
+<input class="w-full bg-input-bg border border-border rounded h-11 px-4 text-white focus:border-accent focus:ring-0 outline-none" type="text" value="ALPHAV1_MOMENTUM"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-text-secondary uppercase">Coin</label>
+<select class="w-full bg-input-bg border border-border rounded h-11 px-3 text-white focus:border-accent focus:ring-0 outline-none">
+<option>BTC/USDT</option>
+<option>ETH/USDT</option>
+<option>SOL/USDT</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-text-secondary uppercase">Timeframe</label>
+<select class="w-full bg-input-bg border border-border rounded h-11 px-3 text-white focus:border-accent focus:ring-0 outline-none">
+<option>15m</option>
+<option>1h</option>
+<option>4h</option>
+<option>1d</option>
+</select>
+</div>
+</div>
+<div class="space-y-4 pt-2">
+<div class="flex justify-between items-center">
+<label class="font-label-caps text-label-caps text-text-secondary uppercase">Backtest Period</label>
+<span class="font-data-sm text-data-sm text-accent">180 DAYS</span>
+</div>
+<input class="w-full accent-accent bg-border h-1 rounded-full appearance-none cursor-pointer" type="range"/>
+</div>
+</div>
+<!-- Entry Logic Toggle -->
+<div class="space-y-3">
+<label class="font-label-caps text-label-caps text-text-secondary uppercase">Entry Logic</label>
+<div class="flex bg-input-bg border border-border rounded p-1 p-1">
+<button class="flex-1 py-2 text-label-caps font-label-caps rounded bg-accent text-black uppercase">AND</button>
+<button class="flex-1 py-2 text-label-caps font-label-caps rounded text-white/40 uppercase hover:text-white transition-colors">OR</button>
+</div>
+</div>
+<!-- Conditions List -->
+<div class="space-y-4">
+<label class="font-label-caps text-label-caps text-text-secondary uppercase">Conditions List</label>
+<!-- Condition Card 1 -->
+<div class="bg-surface-elevated border border-border p-4 rounded-lg relative group transition-colors hover:border-border-hover">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-accent/10 text-accent text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-widest">Condition 01</span>
+<button class="text-danger opacity-60 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="grid grid-cols-12 gap-2 items-center">
+<div class="col-span-4">
+<select class="w-full bg-black border border-border rounded h-9 px-2 text-[12px] text-white focus:border-accent focus:ring-0 outline-none">
+<option>RSI</option>
+<option>EMA</option>
+<option>MACD</option>
+</select>
+</div>
+<div class="col-span-3">
+<select class="w-full bg-black border border-border rounded h-9 px-2 text-[12px] text-white focus:border-accent focus:ring-0 outline-none text-center">
+<option>&lt;</option>
+<option>&gt;</option>
+<option>=</option>
+</select>
+</div>
+<div class="col-span-5">
+<input class="w-full bg-black border border-border rounded h-9 px-3 text-[12px] text-white focus:border-accent focus:ring-0 outline-none" type="number" value="30"/>
+</div>
+</div>
+</div>
+<!-- Condition Card 2 -->
+<div class="bg-surface-elevated border border-border p-4 rounded-lg relative group transition-colors hover:border-border-hover">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-accent/10 text-accent text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-widest">Condition 02</span>
+<button class="text-danger opacity-60 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="grid grid-cols-12 gap-2 items-center">
+<div class="col-span-4">
+<select class="w-full bg-black border border-border rounded h-9 px-2 text-[12px] text-white focus:border-accent focus:ring-0 outline-none">
+<option>EMA 200</option>
+<option>RSI</option>
+<option>Price</option>
+</select>
+</div>
+<div class="col-span-3">
+<select class="w-full bg-black border border-border rounded h-9 px-2 text-[12px] text-white focus:border-accent focus:ring-0 outline-none text-center">
+<option>&gt;</option>
+<option>&lt;</option>
+<option>=</option>
+</select>
+</div>
+<div class="col-span-5">
+<select class="w-full bg-black border border-border rounded h-9 px-2 text-[12px] text-white focus:border-accent focus:ring-0 outline-none">
+<option>Current Price</option>
+<option>SMA 50</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Add Condition Button -->
+<button class="w-full border-2 border-dashed border-border py-4 rounded-lg flex items-center justify-center gap-2 text-text-secondary hover:text-white hover:border-accent/40 transition-all group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="add">add</span>
+<span class="font-label-caps text-label-caps uppercase">Add Condition</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Final Action Section -->
+<div class="pb-8">
+<button class="w-full bg-accent text-black font-bold py-5 rounded uppercase tracking-[0.2em] hover:bg-accent-hover transition-all active:scale-[0.97] shadow-[0_0_20px_rgba(250,204,21,0.2)]">
+                Run Backtest
+            </button>
+</div>
+</main>
+<!-- Footer Simulation (Minimal) -->
+<footer class="w-full border-t border-[#1F1F1F] py-8 bg-black">
+<div class="max-w-[1280px] mx-auto flex flex-col items-center px-8 text-center space-y-4">
+<div class="font-inter text-[10px] tracking-widest uppercase text-white/40">
+                © 2024 ALPHADESK TERMINAL. INSTITUTIONAL GRADE STRATEGY BUILDER.
+            </div>
+<div class="flex gap-4">
+<a class="font-inter text-[10px] tracking-widest uppercase text-white/40 hover:text-yellow-400 transition-colors" href="#">Documentation</a>
+<a class="font-inter text-[10px] tracking-widest uppercase text-white/40 hover:text-yellow-400 transition-colors" href="#">API Reference</a>
+</div>
+</div>
+</footer>
+<!-- Bottom Navigation Bar for Mobile Context -->
+<nav class="md:hidden fixed bottom-0 w-full bg-black/90 backdrop-blur-md border-t border-border z-[60] flex justify-around items-center h-16">
+<div class="flex flex-col items-center text-white/40 hover:text-white transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-medium uppercase mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center text-yellow-400 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="construction">construction</span>
+<span class="text-[10px] font-medium uppercase mt-1">Builder</span>
+</div>
+<div class="flex flex-col items-center text-white/40 hover:text-white transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-[10px] font-medium uppercase mt-1">Results</span>
+</div>
+<div class="flex flex-col items-center text-white/40 hover:text-white transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+<span class="text-[10px] font-medium uppercase mt-1">Signals</span>
+</div>
+</nav>
+<!-- Spacer for bottom nav -->
+<div class="h-16 md:hidden"></div>
+</body></html>
