@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getEtfData } from '@/lib/api';
 
 export default function ETFPanel() {

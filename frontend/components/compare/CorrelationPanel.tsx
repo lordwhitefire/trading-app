@@ -21,12 +21,14 @@ export default function CorrelationPanel() {
     <div className="bg-gray-800 p-4 rounded">
       <h2>Correlation Panel</h2>
       {overlappingSignals.length > 0 ? (
-        <p>The following strategies have overlapping signals:</p>
-        <ul>
-          {overlappingSignals.map((strategy, index) => (
-            <li key={index}>{strategy.name}</li>
-          ))}
-        </ul>
+        <div>
+          <p>The following strategies have overlapping signals:</p>
+          <ul>
+            {overlappingSignals.map((strategy, index) => (
+              <li key={index}>{strategy.name}</li>
+            ))}
+          </ul>
+        </div>
       ) : (
         <p>No overlapping signals found.</p>
       )}

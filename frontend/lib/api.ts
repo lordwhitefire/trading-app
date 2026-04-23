@@ -28,3 +28,8 @@ export const getEtfData = async () => {
   const response = await apiClient.get('/api/etf');
   return response.data;
 };
+
+export const getAvailableIndicators = async () => {
+  const response = await apiClient.get('/api/indicators');
+  return response.data;
+};
