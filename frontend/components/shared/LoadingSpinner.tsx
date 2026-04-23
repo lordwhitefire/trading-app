@@ -1,2 +1,7 @@
-// entire file content ...
-// ... goes in between
+import React from 'react';
+
+export default function LoadingSpinner() {
+  return (
+    <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-500"></div>
+  );
+}
