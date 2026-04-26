@@ -1,74 +1,75 @@
 'use client';
 
 import React from 'react';
-import { useStore } from '@/lib/store';
+import {
+    LineChart, Line, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, ReferenceLine,
+} from 'recharts';
 
-export default function TradeChart() {
-    const { backtestResults } = useStore();
+interface Props {
+    results: any;
+    timezone: string;
+}
+
+const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    return (
+        <div className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-lg p-3 text-xs shadow-xl">
+            <p className="text-[#4B5563] mb-1">{d.date}</p>
+            <p className="text-white font-mono font-bold">
+                Cumulative: <span className={d.cumulative >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'}>
+                    {d.cumulative >= 0 ? '+' : ''}{d.cumulative.toFixed(2)}%
+                </span>
+            </p>
+            <p className="text-[#9CA3AF] mt-1">
+                Signal PnL: <span className={d.pnl >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'}>
+                    {d.pnl >= 0 ? '+' : ''}{d.pnl.toFixed(2)}%
+                </span>
+            </p>
+            <p className="text-[#9CA3AF]">Outcome: {d.outcome}</p>
+        </div>
+    );
+};
+
+export default function EquityCurve({ results, timezone }: Props) {
+    let cumulative = 0;
+    const data = results.signals.map((s: any, i: number) => {
+        cumulative += s.pnl_pct;
+        const date = new Date(s.date);
+        return {
+            index: i + 1,
+            date: date.toLocaleString('en-GB', { timeZone: timezone, dateStyle: 'medium', timeStyle: 'short' }),
+            cumulative: parseFloat(cumulative.toFixed(2)),
+            pnl: s.pnl_pct,
+            outcome: s.outcome,
+        };
+    });
 
     return (
-        <section className="bg-surface border border-border p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold text-white">Equity Curve</h2>
-                {backtestResults && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-accent/10 border border-accent/20">
-                        <span className="w-2 h-2 rounded-full bg-accent pulse-dot" />
-                        <span className="text-[10px] font-bold text-accent uppercase tracking-widest">Live</span>
-                    </div>
-                )}
-            </div>
-
-            {!backtestResults ? (
-                <div className="h-64 flex items-center justify-center border border-dashed border-border rounded">
-                    <p className="text-text-muted text-xs uppercase tracking-widest">Run a backtest to see the equity curve</p>
-                </div>
-            ) : (
-                <div className="relative w-full h-64 mt-4 border-l border-b border-border/50">
-                    <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="curveGradient" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0%" stopColor="#FACC15" stopOpacity="0.2" />
-                                <stop offset="100%" stopColor="#FACC15" stopOpacity="0" />
-                            </linearGradient>
-                        </defs>
-                        {/* Grid lines */}
-                        {[40, 80, 120, 160].map((y) => (
-                            <line key={y} x1="0" x2="400" y1={y} y2={y} stroke="#1F1F1F" strokeWidth="1" />
-                        ))}
-                        {/* Area fill */}
-                        <path
-                            d="M0,180 L40,170 L80,150 L120,165 L160,130 L200,110 L240,115 L280,80 L320,60 L360,75 L400,30 L400,200 L0,200 Z"
-                            fill="url(#curveGradient)"
-                        />
-                        {/* Curve line */}
-                        <path
-                            d="M0,180 L40,170 L80,150 L120,165 L160,130 L200,110 L240,115 L280,80 L320,60 L360,75 L400,30"
-                            fill="none"
-                            stroke="#FACC15"
-                            strokeWidth="2.5"
-                            strokeLinejoin="round"
-                        />
-                        {/* End point dot */}
-                        <circle cx="400" cy="30" r="4" fill="#000" stroke="#FACC15" strokeWidth="2" />
-                    </svg>
-
-                    {/* Y-axis labels */}
-                    <div className="absolute left-[-40px] top-0 bottom-0 flex flex-col justify-between text-[9px] font-mono text-text-muted">
-                        {['300%', '225%', '150%', '75%', '0%'].map((label) => (
-                            <span key={label}>{label}</span>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* X-axis */}
-            {backtestResults && (
-                <div className="flex justify-between text-[10px] font-semibold text-text-muted uppercase tracking-widest px-1">
-                    {['Start', '', '', '', 'Current'].map((label, i) => (
-                        <span key={i}>{label}</span>
-                    ))}
-                </div>
-            )}
-        </section>
+        <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1F1F1F" />
+                <XAxis
+                    dataKey="index"
+                    tick={{ fill: '#4B5563', fontSize: 10 }}
+                    label={{ value: 'Signal #', position: 'insideBottom', offset: -2, fill: '#4B5563', fontSize: 10 }}
+                />
+                <YAxis
+                    tick={{ fill: '#4B5563', fontSize: 10 }}
+                    tickFormatter={v => `${v}%`}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <ReferenceLine y={0} stroke="#4B5563" strokeDasharray="4 4" />
+                <Line
+                    type="monotone"
+                    dataKey="cumulative"
+                    stroke="#FACC15"
+                    strokeWidth={2}
+                    dot={{ fill: '#FACC15', r: 3 }}
+                    activeDot={{ r: 6, fill: '#FDE047' }}
+                />
+            </LineChart>
+        </ResponsiveContainer>
     );
 }

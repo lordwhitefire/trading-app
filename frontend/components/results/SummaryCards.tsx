@@ -1,47 +1,66 @@
 'use client';
 
 import React from 'react';
-import { useStore } from '@/lib/store';
 
-export default function SummaryCards() {
-  const { backtestResults } = useStore();
+interface Props {
+  results: any;
+}
 
-  if (!backtestResults) {
-    return (
-      <section className="grid grid-cols-2 gap-4">
-        {['Total Signals', 'Win Rate', 'Total Return', 'Avg PnL'].map((label) => (
-          <div key={label} className="bg-surface border border-border p-4 flex flex-col gap-1 animate-pulse">
-            <span className="text-[12px] font-semibold uppercase tracking-widest text-text-secondary">{label}</span>
-            <div className="h-8 bg-border rounded w-24 mt-1" />
-          </div>
-        ))}
-      </section>
-    );
-  }
-
-  const totalSignals = backtestResults.total_signals ?? 0;
-  const winRate = backtestResults.win_rate?.toFixed(1) ?? '0.0';
-  const totalReturn = backtestResults.total_return?.toFixed(1) ?? '0.0';
-  const avgPnl = backtestResults.avg_pnl?.toFixed(2) ?? '0.00';
-
+export default function SummaryCards({ results }: Props) {
   const cards = [
-    { label: 'Total Signals', value: totalSignals.toLocaleString(), color: 'text-text-primary' },
-    { label: 'Win Rate', value: `${winRate}%`, color: parseFloat(winRate) >= 50 ? 'text-success' : 'text-danger' },
-    { label: 'Total Return', value: `${parseFloat(totalReturn) >= 0 ? '+' : ''}${totalReturn}%`, color: parseFloat(totalReturn) >= 0 ? 'text-success' : 'text-danger' },
-    { label: 'Avg PnL', value: `${parseFloat(avgPnl) >= 0 ? '+' : ''}${avgPnl}%`, color: parseFloat(avgPnl) >= 0 ? 'text-success' : 'text-danger' },
+    {
+      label: 'Total Signals',
+      value: results.total_signals,
+      format: (v: number) => v.toString(),
+      color: 'text-white',
+    },
+    {
+      label: 'Win Rate',
+      value: results.win_rate,
+      format: (v: number) => `${v.toFixed(1)}%`,
+      color: results.win_rate >= 50 ? 'text-[#22C55E]' : 'text-[#EF4444]',
+    },
+    {
+      label: 'Total Return',
+      value: results.total_return_pct,
+      format: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
+      color: results.total_return_pct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]',
+    },
+    {
+      label: 'Avg PnL / Trade',
+      value: results.avg_pnl_pct,
+      format: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
+      color: results.avg_pnl_pct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]',
+    },
+    {
+      label: 'Max Drawdown',
+      value: results.max_drawdown_pct,
+      format: (v: number) => `-${v.toFixed(2)}%`,
+      color: 'text-[#EF4444]',
+    },
+    {
+      label: 'Backtest Candles',
+      value: results.backtest_period,
+      format: (v: number) => v.toString(),
+      color: 'text-[#9CA3AF]',
+    },
   ];
 
   return (
-    <section className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-surface border border-border p-4 flex flex-col gap-1 transition-all duration-300 hover:border-border-hover"
+          className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-xl p-5"
         >
-          <span className="text-[12px] font-semibold uppercase tracking-widest text-text-secondary">{card.label}</span>
-          <span className={`font-mono text-3xl font-normal ${card.color}`}>{card.value}</span>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-3">
+            {card.label}
+          </p>
+          <p className={`text-2xl font-mono font-bold ${card.color}`}>
+            {card.format(card.value)}
+          </p>
         </div>
       ))}
-    </section>
+    </div>
   );
 }

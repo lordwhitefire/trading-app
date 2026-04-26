@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
+
 export default function HomePage() {
   return (
     <div className="max-w-[1280px] mx-auto px-6">
