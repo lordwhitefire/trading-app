@@ -10,29 +10,17 @@ BYBIT_BASE_URL = "https://api.bybit.com"
 SOSOVALUE_BASE_URL = "https://openapi.sosovalue.com"
 
 TIMEFRAME_MAP = {
-    '1m': '1',
-    '5m': '5',
-    '15m': '15',
-    '1h': '60',
-    '4h': '240',
-    '1d': 'D',
+    '1m': '1', '5m': '5', '15m': '15',
+    '1h': '60', '4h': '240', '1d': 'D',
 }
 
 TIMEFRAME_MINUTES = {
-    '1m': 1,
-    '5m': 5,
-    '15m': 15,
-    '1h': 60,
-    '4h': 240,
-    '1d': 1440,
+    '1m': 1, '5m': 5, '15m': 15,
+    '1h': 60, '4h': 240, '1d': 1440,
 }
 
 
 def fetch_ohlcv(strategy: Strategy) -> dict:
-    """
-    Fetches exactly the right number of candles based on the strategy.
-    Returns a dict with the full DataFrame and metadata about warmup split.
-    """
     candle_info = calculate_candles_needed(strategy)
     total_candles = candle_info["total_candles"]
     warmup_candles = candle_info["warmup_candles"]
@@ -59,7 +47,6 @@ def fetch_ohlcv(strategy: Strategy) -> dict:
             'end': current_end,
             'limit': 1000,
         }
-
         try:
             response = requests.get(
                 f"{BYBIT_BASE_URL}/v5/market/kline",
@@ -73,16 +60,13 @@ def fetch_ohlcv(strategy: Strategy) -> dict:
                 raise Exception(f"Bybit API error: {data['retMsg']}")
 
             candles = data['result']['list']
-
             if not candles:
                 break
 
             all_candles.extend(candles)
-
             earliest_ts = int(candles[-1][0])
             if earliest_ts <= start_ms:
                 break
-
             current_end = earliest_ts - 1
 
         except requests.exceptions.RequestException as e:
@@ -102,7 +86,6 @@ def fetch_ohlcv(strategy: Strategy) -> dict:
     ].astype(float)
     df = df.sort_values('timestamp').reset_index(drop=True)
 
-    # Trim to exactly what we need
     if len(df) > total_candles:
         df = df.iloc[-total_candles:].reset_index(drop=True)
 
@@ -131,32 +114,76 @@ def fetch_live_price(coin: str) -> float:
 
 
 def fetch_news(coin: str) -> list:
+    """
+    Fetches crypto news using CryptoCompare free API.
+    No API key needed for basic usage.
+    """
     try:
-        headers = {'x-soso-api-key': SOSOVALUE_API_KEY}
-        response = requests.post(
-            f"{SOSOVALUE_BASE_URL}/openapi/v1/news/currency",
-            headers=headers,
-            json={'currencyName': coin.split('/')[0].lower()},
+        symbol = coin.split('/')[0].upper()
+        response = requests.get(
+            "https://min-api.cryptocompare.com/data/v2/news/",
+            params={
+                'categories': symbol,
+                'excludeCategories': 'Sponsored',
+                'lang': 'EN',
+                'sortOrder': 'latest',
+            },
             timeout=10
         )
         response.raise_for_status()
         data = response.json()
-        return data.get('data', [])
+        articles = data.get('Data', [])[:10]
+
+        return [
+            {
+                'title': a.get('title', ''),
+                'source': a.get('source_info', {}).get('name', 'Unknown'),
+                'url': a.get('url', ''),
+                'published_at': a.get('published_on', 0),
+                'sentiment': _classify_sentiment(a.get('title', '')),
+            }
+            for a in articles
+        ]
     except Exception as e:
         raise Exception(f"Failed to fetch news: {e}")
 
 
-def fetch_etf_data() -> dict:
+def _classify_sentiment(title: str) -> str:
+    title_lower = title.lower()
+    bullish_words = ['surge', 'rally', 'bull', 'gain', 'rise', 'high', 'approve', 'launch', 'adoption', 'buy']
+    bearish_words = ['crash', 'drop', 'fall', 'bear', 'sell', 'hack', 'ban', 'fear', 'decline', 'loss']
+    if any(w in title_lower for w in bullish_words):
+        return 'BULLISH'
+    if any(w in title_lower for w in bearish_words):
+        return 'BEARISH'
+    return 'NEUTRAL'
+
+
+def fetch_etf_data() -> list:
+    """
+    Fetches BTC ETF flow data from SoSoValue API.
+    Returns list of ETF rows with ticker, netFlow, totalAum.
+    """
     try:
         headers = {'x-soso-api-key': SOSOVALUE_API_KEY}
         response = requests.post(
-            f"{SOSOVALUE_BASE_URL}/openapi/v1/etf/metrics",
+            f"{SOSOVALUE_BASE_URL}/openapi/v1/etf/spot/bitcoin/list",
             headers=headers,
             json={},
             timeout=10
         )
         response.raise_for_status()
         data = response.json()
-        return data.get('data', {})
-    except Exception as e:
-        raise Exception(f"Failed to fetch ETF data: {e}")
+        items = data.get('data', [])
+
+        return [
+            {
+                'ticker': item.get('ticker', ''),
+                'netFlow': item.get('dailyNetInflow', 0),
+                'totalAum': f"${item.get('totalNetAssets', 0) / 1e9:.1f}B",
+            }
+            for item in items[:8]
+        ]
+    except Exception:
+        # Return empty list — frontend will keep showing last known data
+        return []

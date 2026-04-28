@@ -10,7 +10,8 @@ export default function ProfilePage() {
     const router = useRouter();
     const {
         user, savedStrategies, savedResults,
-        deleteStrategy, deleteResult, setBacktestResults
+        deleteStrategy, deleteResult, setBacktestResults,
+        setStrategyToLoad, setActiveStrategy,
     } = useStore();
     const [activeTab, setActiveTab] = useState<'strategies' | 'results'>('strategies');
 
@@ -19,6 +20,16 @@ export default function ProfilePage() {
             provider: 'google',
             options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
+    };
+
+    const handleLoadStrategy = (strategy: any) => {
+        setStrategyToLoad(strategy);
+        router.push('/builder');
+    };
+
+    const handleActivateLive = (strategy: any) => {
+        setActiveStrategy(strategy);
+        router.push('/live');
     };
 
     if (!user) {
@@ -41,8 +52,6 @@ export default function ProfilePage() {
         );
     }
 
-    const totalWins = savedResults.reduce((acc: number, r: any) => acc + (r.results?.wins || 0), 0);
-    const totalSignals = savedResults.reduce((acc: number, r: any) => acc + (r.results?.total_signals || 0), 0);
     const avgWinRate = savedResults.length > 0
         ? (savedResults.reduce((acc: number, r: any) => acc + (r.results?.win_rate || 0), 0) / savedResults.length).toFixed(1)
         : '0';
@@ -57,9 +66,7 @@ export default function ProfilePage() {
                         src={user.user_metadata?.avatar_url || ''}
                         alt="avatar"
                         className="w-16 h-16 rounded-full border-2 border-[#FACC15]"
-                        onError={(e: any) => {
-                            e.target.style.display = 'none';
-                        }}
+                        onError={(e: any) => { e.target.style.display = 'none'; }}
                     />
                     <div>
                         <h1 className="text-white font-black text-2xl">
@@ -69,7 +76,6 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Quick stats */}
                 <div className="grid grid-cols-3 gap-4 mt-6">
                     {[
                         { label: 'Saved Strategies', value: savedStrategies.length },
@@ -106,10 +112,7 @@ export default function ProfilePage() {
                     {savedStrategies.length === 0 ? (
                         <div className="border border-dashed border-[#1F1F1F] rounded-xl p-12 text-center">
                             <p className="text-[#4B5563] text-sm mb-4">No saved strategies yet.</p>
-                            <Link
-                                href="/builder"
-                                className="text-[#FACC15] text-sm hover:underline"
-                            >
+                            <Link href="/builder" className="text-[#FACC15] text-sm hover:underline">
                                 → Build your first strategy
                             </Link>
                         </div>
@@ -117,32 +120,40 @@ export default function ProfilePage() {
                         savedStrategies.map((strategy: any) => (
                             <div
                                 key={strategy.id}
-                                className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-xl p-5 flex items-center justify-between hover:border-[#2E2E2E] transition-colors"
+                                className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-xl p-5 hover:border-[#2E2E2E] transition-colors"
                             >
-                                <div>
-                                    <h3 className="text-white font-bold">{strategy.name}</h3>
-                                    <div className="flex gap-3 mt-1 flex-wrap">
-                                        <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.coin}</span>
-                                        <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.timeframe}</span>
-                                        <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.conditions?.length} conditions</span>
-                                        <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">
-                                            {new Date(strategy.created_at).toLocaleDateString('en-GB')}
-                                        </span>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h3 className="text-white font-bold">{strategy.name}</h3>
+                                        <div className="flex gap-3 mt-1 flex-wrap">
+                                            <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.coin}</span>
+                                            <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.timeframe}</span>
+                                            <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.conditions?.length} conditions</span>
+                                            <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">
+                                                {new Date(strategy.created_at).toLocaleDateString('en-GB')}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Link
-                                        href="/builder"
-                                        className="text-xs text-[#FACC15] border border-[#FACC15]/30 px-3 py-1.5 rounded-lg hover:bg-[#FACC15]/10 transition-colors"
-                                    >
-                                        Load
-                                    </Link>
-                                    <button
-                                        onClick={() => deleteStrategy(strategy.id)}
-                                        className="text-xs text-red-500/60 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                                    >
-                                        Delete
-                                    </button>
+                                    <div className="flex gap-2 flex-shrink-0">
+                                        <button
+                                            onClick={() => handleLoadStrategy(strategy)}
+                                            className="text-xs text-[#FACC15] border border-[#FACC15]/30 px-3 py-1.5 rounded-lg hover:bg-[#FACC15]/10 transition-colors"
+                                        >
+                                            ⚙ Load
+                                        </button>
+                                        <button
+                                            onClick={() => handleActivateLive(strategy)}
+                                            className="text-xs text-green-400 border border-green-400/30 px-3 py-1.5 rounded-lg hover:bg-green-400/10 transition-colors"
+                                        >
+                                            📡 Live
+                                        </button>
+                                        <button
+                                            onClick={() => deleteStrategy(strategy.id)}
+                                            className="text-xs text-red-500/60 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -156,10 +167,7 @@ export default function ProfilePage() {
                     {savedResults.length === 0 ? (
                         <div className="border border-dashed border-[#1F1F1F] rounded-xl p-12 text-center">
                             <p className="text-[#4B5563] text-sm mb-4">No saved results yet.</p>
-                            <Link
-                                href="/builder"
-                                className="text-[#FACC15] text-sm hover:underline"
-                            >
+                            <Link href="/builder" className="text-[#FACC15] text-sm hover:underline">
                                 → Run your first backtest
                             </Link>
                         </div>
@@ -182,10 +190,7 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={() => {
-                                                setBacktestResults(result.results);
-                                                router.push('/results');
-                                            }}
+                                            onClick={() => { setBacktestResults(result.results); router.push('/results'); }}
                                             className="text-xs text-[#FACC15] border border-[#FACC15]/30 px-3 py-1.5 rounded-lg hover:bg-[#FACC15]/10 transition-colors"
                                         >
                                             View
@@ -199,24 +204,15 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
-                                {/* Quick stats */}
                                 <div className="grid grid-cols-4 gap-2 mt-4">
                                     {[
-                                        { label: 'Signals', value: result.results?.total_signals },
-                                        {
-                                            label: 'Win Rate',
-                                            value: `${result.results?.win_rate}%`,
-                                            color: result.results?.win_rate >= 50 ? 'text-[#22C55E]' : 'text-[#EF4444]'
-                                        },
-                                        {
-                                            label: 'Return',
-                                            value: `${result.results?.total_return_pct >= 0 ? '+' : ''}${result.results?.total_return_pct?.toFixed(1)}%`,
-                                            color: result.results?.total_return_pct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'
-                                        },
+                                        { label: 'Signals', value: result.results?.total_signals, color: 'text-white' },
+                                        { label: 'Win Rate', value: `${result.results?.win_rate}%`, color: result.results?.win_rate >= 50 ? 'text-[#22C55E]' : 'text-[#EF4444]' },
+                                        { label: 'Return', value: `${result.results?.total_return_pct >= 0 ? '+' : ''}${result.results?.total_return_pct?.toFixed(1)}%`, color: result.results?.total_return_pct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]' },
                                         { label: 'Drawdown', value: `-${result.results?.max_drawdown_pct?.toFixed(1)}%`, color: 'text-[#EF4444]' },
                                     ].map(stat => (
                                         <div key={stat.label} className="bg-[#111111] rounded-lg p-2 text-center">
-                                            <p className={`font-mono text-sm font-bold ${stat.color || 'text-white'}`}>{stat.value}</p>
+                                            <p className={`font-mono text-sm font-bold ${stat.color}`}>{stat.value}</p>
                                             <p className="text-[9px] text-[#4B5563] uppercase tracking-widest mt-0.5">{stat.label}</p>
                                         </div>
                                     ))}

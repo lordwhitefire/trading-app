@@ -63,15 +63,20 @@ const OPERATORS = [
 const DIRECTIONS = ['bullish', 'bearish', 'any'];
 const INTERACTIONS = ['touch', 'bounce', 'break', 'near'];
 
-// ─── Searchable Coin Dropdown ─────────────────────────────────────────────────
-function CoinSearch({ coins, value, onChange }: { coins: string[]; value: string; onChange: (v: string) => void }) {
+// ─── Multi-coin searchable selector with tags ─────────────────────────────────
+function CoinMultiSelect({ allCoins, selected, onChange }: {
+  allCoins: string[];
+  selected: string[];
+  onChange: (coins: string[]) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
-  const filtered = coins.filter(c => c.toLowerCase().includes(query.toLowerCase()));
+  const filtered = allCoins.filter(
+    c => c.toLowerCase().includes(query.toLowerCase()) && !selected.includes(c)
+  );
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -83,50 +88,62 @@ function CoinSearch({ coins, value, onChange }: { coins: string[]; value: string
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  const add = (coin: string) => { onChange([...selected, coin]); setQuery(''); };
+  const remove = (coin: string) => onChange(selected.filter(c => c !== coin));
+
   return (
     <div ref={ref} className="relative">
-      {/* Trigger button */}
-      <button
-        type="button"
-        onClick={() => { setOpen(o => !o); setQuery(''); }}
-        className="w-full bg-[#111111] border border-[#1F1F1F] text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-[#FACC15] transition-colors flex items-center justify-between"
+      {/* Tags + trigger */}
+      <div
+        onClick={() => setOpen(o => !o)}
+        className="min-h-[46px] w-full bg-[#111111] border border-[#1F1F1F] rounded-lg px-3 py-2 focus-within:border-[#FACC15] transition-colors cursor-pointer flex flex-wrap gap-1.5 items-center"
       >
-        <span>{value}</span>
-        <span className="text-[#4B5563] text-xs">{open ? '▲' : '▼'}</span>
-      </button>
+        {selected.length === 0 && (
+          <span className="text-[#4B5563] text-sm">Select coins...</span>
+        )}
+        {selected.map(coin => (
+          <span key={coin}
+            className="inline-flex items-center gap-1 bg-[#FACC15]/10 border border-[#FACC15]/30 text-[#FACC15] text-xs font-semibold px-2 py-0.5 rounded">
+            {coin}
+            <button type="button"
+              onClick={e => { e.stopPropagation(); remove(coin); }}
+              className="hover:text-white transition-colors leading-none">×</button>
+          </span>
+        ))}
+        <span className="ml-auto text-[#4B5563] text-xs">{open ? '▲' : '▼'}</span>
+      </div>
 
-      {/* Dropdown panel */}
+      {/* Dropdown */}
       {open && (
         <div className="absolute z-50 mt-1 w-full bg-[#111111] border border-[#1F1F1F] rounded-lg shadow-xl overflow-hidden">
-          {/* Search input */}
           <div className="p-2 border-b border-[#1F1F1F]">
-            <input
-              autoFocus
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
+            <input autoFocus type="text" value={query} onChange={e => setQuery(e.target.value)}
               placeholder="🔍 Search coin..."
-              className="w-full bg-[#0D0D0D] border border-[#1F1F1F] text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#FACC15] transition-colors placeholder:text-[#4B5563]"
-            />
+              className="w-full bg-[#0D0D0D] border border-[#1F1F1F] text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#FACC15] transition-colors placeholder:text-[#4B5563]" />
           </div>
-          {/* Options list */}
           <ul className="max-h-48 overflow-y-auto">
             {filtered.length === 0 ? (
-              <li className="px-4 py-3 text-[#4B5563] text-sm">No coins found</li>
+              <li className="px-4 py-3 text-[#4B5563] text-sm">
+                {query ? 'No coins found' : 'All coins selected'}
+              </li>
             ) : (
               filtered.map(c => (
-                <li
-                  key={c}
-                  onClick={() => { onChange(c); setOpen(false); setQuery(''); }}
-                  className={`px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between
-                    ${c === value ? 'text-[#FACC15] bg-[#FACC15]/10' : 'text-white hover:bg-[#1F1F1F]'}`}
-                >
+                <li key={c} onClick={() => add(c)}
+                  className="px-4 py-2.5 text-sm cursor-pointer text-white hover:bg-[#1F1F1F] transition-colors flex items-center justify-between">
                   {c}
-                  {c === value && <span className="text-[#FACC15] text-xs">✓</span>}
+                  <span className="text-[#4B5563] text-xs">+ Add</span>
                 </li>
               ))
             )}
           </ul>
+          {selected.length > 0 && (
+            <div className="p-2 border-t border-[#1F1F1F]">
+              <button type="button" onClick={() => onChange([])}
+                className="w-full text-xs text-red-400/60 hover:text-red-400 transition-colors py-1">
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -136,11 +153,11 @@ function CoinSearch({ coins, value, onChange }: { coins: string[]; value: string
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function BuilderPage() {
   const router = useRouter();
-  const { user, saveStrategyToDB, saveResultsToDB, addStrategy, setBacktestResults } = useStore();
+  const { user, saveStrategyToDB, saveResultsToDB, addStrategy, setBacktestResults, strategyToLoad, setStrategyToLoad } = useStore();
 
   // ─── Strategy settings ────────────────────────────────────────────────────
   const [name, setName] = useState('ALPHAV1_MOMENTUM');
-  const [coin, setCoin] = useState('BTC/USDT');
+  const [coins, setCoins] = useState<string[]>(['BTC/USDT']); // multi-coin
   const [timeframe, setTimeframe] = useState('1h');
   const [backtestPeriod, setBacktestPeriod] = useState(100);
   const [logic, setLogic] = useState<'AND' | 'OR'>('AND');
@@ -163,7 +180,7 @@ export default function BuilderPage() {
   const [indicators, setIndicators] = useState<string[]>([]);
   const [patterns, setPatterns] = useState<string[]>([]);
   const [levelTypes, setLevelTypes] = useState<any[]>([]);
-  const [coins, setCoins] = useState<string[]>(['BTC/USDT', 'ETH/USDT', 'SOL/USDT']);
+  const [availableCoins, setAvailableCoins] = useState<string[]>(['BTC/USDT', 'ETH/USDT', 'SOL/USDT']);
 
   // ─── UI state ─────────────────────────────────────────────────────────────
   const [warnings, setWarnings] = useState<any[]>([]);
@@ -180,7 +197,7 @@ export default function BuilderPage() {
     getAvailablePatterns().then(r => setPatterns(r.patterns)).catch(console.error);
     getAvailableLevels().then(r => setLevelTypes(r.level_types)).catch(console.error);
     getAvailableCoins()
-      .then(r => setCoins(r.coins.map((c: string) => c.replace('USDT', '/USDT'))))
+      .then(r => setAvailableCoins(r.coins.map((c: string) => c.replace('USDT', '/USDT'))))
       .catch(console.error);
   }, []);
 
@@ -193,7 +210,32 @@ export default function BuilderPage() {
     }
   }, [leverage]);
 
-  // ─── Condition helpers ────────────────────────────────────────────────────
+  // ─── Issue 2: Populate builder from loaded strategy ───────────────────────
+  useEffect(() => {
+    if (!strategyToLoad) return;
+    const s = strategyToLoad;
+    if (s.name) setName(s.name);
+    // coins: prefer coins array, fall back to single coin string
+    if (s.coins?.length) setCoins(s.coins);
+    else if (s.coin) setCoins([s.coin]);
+    if (s.timeframe) setTimeframe(s.timeframe);
+    if (s.backtest_period) setBacktestPeriod(s.backtest_period);
+    if (s.logic) setLogic(s.logic);
+    if (s.direction) {
+      // map backend direction back to UI direction
+      const map: Record<string, Direction> = { long: 'bullish', short: 'bearish', auto: 'both' };
+      setDirection(map[s.direction] ?? 'bullish');
+    }
+    if (s.conditions?.length) setConditions(s.conditions);
+    if (s.analysis_config) {
+      if (s.analysis_config.leverage != null) setLeverage(s.analysis_config.leverage);
+      if (s.analysis_config.amount != null) setAmount(s.analysis_config.amount);
+      if (s.analysis_config.trade_duration != null) setTradeDuration(s.analysis_config.trade_duration);
+      if (s.analysis_config.stop_loss_pct != null) setStopLossPct(s.analysis_config.stop_loss_pct);
+      if (s.analysis_config.take_profit_pct != null) setTakeProfitPct(s.analysis_config.take_profit_pct);
+    }
+    setStrategyToLoad(null); // clear so it doesn't re-trigger
+  }, [strategyToLoad]);
   const addCondition = (type: ConditionType) => {
     if (type === 'indicator') {
       setConditions([...conditions, { type: 'indicator', indicator: indicators[0] || 'rsi', operator: 'less_than', value: 30, period: 14 }]);
@@ -254,7 +296,10 @@ export default function BuilderPage() {
     both: 'auto',
   };
   const buildStrategy = () => ({
-    name, coin, timeframe, backtest_period: backtestPeriod, logic,
+    name,
+    coins,                          // multi-coin array for backend
+    coin: coins[0] || 'BTC/USDT',  // backwards compat — backend syncs automatically
+    timeframe, backtest_period: backtestPeriod, logic,
     direction: directionMap[direction],
     conditions,
     analysis_config: { leverage, amount, trade_duration: tradeDuration, stop_loss_pct: stopLossPct, take_profit_pct: takeProfitPct },
@@ -263,6 +308,7 @@ export default function BuilderPage() {
   // ─── Run backtest ─────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!name.trim()) { setError('Strategy name is required.'); return; }
+    if (coins.length === 0) { setError('Select at least one coin.'); return; }
     if (conditions.length === 0) { setError('Add at least one condition.'); return; }
     if (stopLossPct >= maxSafeSL) { setError(`Stop loss must be less than ${maxSafeSL}% for ${leverage}x leverage.`); return; }
     setLoading(true); setError('');
@@ -278,7 +324,7 @@ export default function BuilderPage() {
     } finally { setLoading(false); }
   };
 
-  const isValid = name.trim() && conditions.length > 0 && stopLossPct < maxSafeSL;
+  const isValid = name.trim() && coins.length > 0 && conditions.length > 0 && stopLossPct < maxSafeSL;
 
   // ─── Direction config ─────────────────────────────────────────────────────
   const directionConfig: Record<Direction, { label: string; icon: string; color: string; activeBg: string; activeText: string }> = {
@@ -309,10 +355,14 @@ export default function BuilderPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* ── Searchable coin dropdown ── */}
+              {/* ── Multi-coin selector ── */}
               <div>
-                <label className={labelClass}>Coin</label>
-                <CoinSearch coins={coins} value={coin} onChange={setCoin} />
+                <label className={labelClass}>Coins ({coins.length} selected)</label>
+                <CoinMultiSelect
+                  allCoins={availableCoins}
+                  selected={coins}
+                  onChange={setCoins}
+                />
               </div>
 
               <div>
