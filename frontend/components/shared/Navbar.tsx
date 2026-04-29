@@ -13,10 +13,11 @@ export default function Navbar() {
   const { user, setUser } = useStore();
 
   const links = [
-    { href: '/', label: 'Home', icon: '⊞' },
-    { href: '/builder', label: 'Builder', icon: '⚙' },
+    { href: '/', label: 'Home', icon: '❤' },
+    { href: '/builder', label: 'Builder', icon: '⚡' },
     { href: '/results', label: 'Results', icon: '📊' },
     { href: '/live', label: 'Signals', icon: '📡' },
+    { href: '/trade', label: 'Journal', icon: '📒' },
     { href: '/profile', label: 'Profile', icon: '👤' },
   ];
 
@@ -40,7 +41,7 @@ export default function Navbar() {
       <header className="fixed top-0 left-0 right-0 w-full border-b border-[#1F1F1F] z-50 bg-black/90 backdrop-blur-md">
         <div className="max-w-[1280px] mx-auto flex justify-between items-center px-6 h-16">
           <div className="flex items-center gap-2">
-            <span className="text-[#FACC15] text-lg">▣</span>
+            <span className="text-[#FACC15] text-lg">⚡</span>
             <span className="text-xl font-black text-[#FACC15] tracking-tighter uppercase">AlphaDesk</span>
           </div>
 
@@ -66,7 +67,7 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={handleSignIn}
-                className="flex items-center gap-2 bg-[#FACC15] text-black font-bold px-4 py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-[#FDE047] transition-colors"
+                className="flex items-center gap-2 bg-[#FACC15] text-black font-bold px-4 py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-[#FDD047] transition-colors"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -98,8 +99,8 @@ export default function Navbar() {
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className={`flex items-center gap-4 px-6 py-4 text-sm font-medium uppercase transition-all ${pathname === link.href
-                      ? 'bg-[#FACC15]/10 text-[#FACC15] border-l-4 border-[#FACC15]'
-                      : 'text-white/40 hover:bg-[#1F1F1F] hover:text-white'
+                    ? 'bg-[#FACC15]/10 text-[#FACC15] border-l-4 border-[#FACC15]'
+                    : 'text-white/40 hover:bg-[#1F1F1F] hover:text-white'
                     }`}
                 >
                   <span>{link.icon}</span>
@@ -117,7 +118,7 @@ export default function Navbar() {
           <Link
             key={link.href}
             href={link.href}
-            className={`flex flex-col items-center gap-1 px-3 py-1 text-[10px] uppercase tracking-widest transition-colors ${pathname === link.href ? 'text-[#FACC15]' : 'text-white/40'
+            className={`flex flex-col items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${pathname === link.href ? 'text-[#FACC15]' : 'text-white/40'
               }`}
           >
             <span className="text-lg">{link.icon}</span>

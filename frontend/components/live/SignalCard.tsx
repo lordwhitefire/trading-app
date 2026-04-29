@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useStore } from '@/lib/store';
 
 interface Signal {
   coin: string;
@@ -14,14 +16,32 @@ interface Signal {
   stop_loss_price?: number;
   take_profit_price?: number;
   conditions_triggered?: string[];
+  strategy_name?: string;
 }
 
 export default function SignalCard({ signal }: { signal: Signal }) {
+  const router = useRouter();
+  const { setTradeToLog } = useStore();
+
   const direction = (signal.direction || 'LONG').toUpperCase();
   const isLong = direction === 'LONG';
   const entryPrice = signal.entry_price || signal.entryPrice || 0;
   const confidence = signal.confidence || signal.confidence_score || 0;
   const timestamp = signal.timestamp || signal.time || '';
+
+  const handlePlaceTrade = () => {
+    setTradeToLog({
+      coin: signal.coin,
+      direction: signal.direction,
+      entry_price: entryPrice,
+      stop_loss_price: signal.stop_loss_price,
+      take_profit_price: signal.take_profit_price,
+      confidence,
+      conditions_triggered: signal.conditions_triggered || [],
+      strategy_name: signal.strategy_name || '',
+    });
+    router.push('/trade');
+  };
 
   return (
     <div className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-xl p-4 mb-3 hover:border-[#2E2E2E] transition-colors">
@@ -33,8 +53,8 @@ export default function SignalCard({ signal }: { signal: Signal }) {
             {signal.coin}
           </span>
           <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${isLong
-              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+            : 'bg-red-500/20 text-red-400 border border-red-500/30'
             }`}>
             {isLong ? '↑ LONG' : '↓ SHORT'}
           </span>
@@ -93,6 +113,14 @@ export default function SignalCard({ signal }: { signal: Signal }) {
           </div>
         </div>
       )}
+
+      {/* Place Trade button */}
+      <button
+        onClick={handlePlaceTrade}
+        className="mt-4 w-full flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-[#FDD047] text-black font-bold text-xs uppercase tracking-widest py-2.5 rounded-lg transition-colors"
+      >
+        Place Trade →
+      </button>
     </div>
   );
 }

@@ -28,6 +28,14 @@ interface AppState {
   loadUserData: () => Promise<void>;
   deleteStrategy: (id: string) => Promise<void>;
   deleteResult: (id: string) => Promise<void>;
+
+  // --- Paper Trading ---
+  tradeToLog: any | null;
+  setTradeToLog: (trade: any) => void;
+  openTrades: any[];
+  closedTrades: any[];
+  setOpenTrades: (trades: any[]) => void;
+  setClosedTrades: (trades: any[]) => void;
 }
 
 const useStore = create<AppState>((set, get) => ({
@@ -73,11 +81,9 @@ const useStore = create<AppState>((set, get) => ({
     const { user } = get();
     if (!user) return;
 
-    // Handle both single-coin and multi-coin results
     const isMulti = results?.multi_coin === true;
     const rows = isMulti
-      ? // One row per coin for multi-coin results
-      (results.coins as string[]).map((coin: string) => ({
+      ? (results.coins as string[]).map((coin: string) => ({
         user_id: user.id,
         strategy_name: strategy.name,
         coin,
@@ -120,6 +126,14 @@ const useStore = create<AppState>((set, get) => ({
     await supabase.from('backtest_results').delete().eq('id', id);
     set((state) => ({ savedResults: state.savedResults.filter((r) => r.id !== id) }));
   },
+
+  // --- Paper Trading ---
+  tradeToLog: null,
+  setTradeToLog: (trade) => set({ tradeToLog: trade }),
+  openTrades: [],
+  closedTrades: [],
+  setOpenTrades: (trades) => set({ openTrades: trades }),
+  setClosedTrades: (trades) => set({ closedTrades: trades }),
 }));
 
 export { useStore };
