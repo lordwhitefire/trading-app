@@ -9,6 +9,7 @@ import OutcomeBreakdown from '@/components/results/OutcomeBreakdown';
 import TimeHeatmap from '@/components/results/TimeHeatmap';
 import SignalsTable from '@/components/results/SignalsTable';
 import AIAnalysisPanel from '@/components/shared/AIExplanationPanel';
+import DownloadReport from '@/components/results/DownloadReport';
 
 const TIMEZONES = [
   { label: 'WAT — West Africa Time (UTC+1)', value: 'Africa/Lagos' },
@@ -21,20 +22,24 @@ const TIMEZONES = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** True when the backend returned a multi-coin payload */
+/**
+ * True when the backend returned a multi-coin payload.
+ * Handles both boolean true and string "true" just in case serialisation varies.
+ */
 function isMultiCoin(r: any): boolean {
-  return r?.multi_coin === true && r?.results != null;
+  return (r?.multi_coin === true || r?.multi_coin === 'true') && r?.results != null;
 }
 
 /**
- * For multi-coin results, compute a quick summary row per coin
- * so the tab can show win rate at a glance.
+ * Per-coin summary for the tab bar.
+ * Uses the EXACT field names from BacktestResult (backend/models/signal.py):
+ *   total_signals, wins, expired_wins, total_return_pct
  */
 function coinSummary(result: any) {
-  const total = result?.total_trades ?? 0;
-  const wins = result?.winning_trades ?? 0;
+  const total = result?.total_signals ?? 0;
+  const wins = (result?.wins ?? 0) + (result?.expired_wins ?? 0);
   const wr = total > 0 ? ((wins / total) * 100).toFixed(0) : '—';
-  const pnl = result?.total_pnl ?? result?.net_pnl ?? 0;
+  const pnl = result?.total_return_pct ?? 0;
   return { total, winRate: wr, pnl };
 }
 
@@ -138,7 +143,7 @@ export default function ResultsPage() {
   const [selectedSignal, setSelectedSignal] = useState<any>(null);
   const [activeCoin, setActiveCoin] = useState<string>('');
 
-  // Detect multi-coin and derive active coin default
+  // ── Detect multi-coin and derive active coin default ──────────────────────
   const multi = isMultiCoin(backtestResults);
 
   const coins: string[] = multi ? backtestResults.coins : [];
@@ -152,13 +157,13 @@ export default function ResultsPage() {
     return coins.find(c => !coinErrors[c]) ?? coins[0] ?? '';
   }, [multi, activeCoin, coins, coinResults, coinErrors]);
 
-  // The result object to display
+  // The result object to display — always an individual BacktestResult dict
   const displayResults = multi ? coinResults[resolvedActive] : backtestResults;
 
   // For AI panel in multi-coin mode, pass all results together
-  const aiResults = multi ? coinResults : backtestResults;
+  const aiResults = backtestResults;
 
-  // ── No results ──
+  // ── No results ──────────────────────────────────────────────────────────
   if (!backtestResults) {
     return (
       <div className="max-w-[1280px] mx-auto px-6 py-24 flex flex-col items-center justify-center">
@@ -205,7 +210,12 @@ export default function ResultsPage() {
           </select>
         </div>
       </div>
-
+      {/* 2. Add to the header section (next to the timezone selector)*/}
+      <DownloadReport
+        results={backtestResults}
+        isMultiCoin={multi}
+        coins={multi ? coins : undefined}
+      />
       {/* ── Multi-coin: coin tab bar ── */}
       {multi && (
         <div className="bg-[#0D0D0D] border border-[#1F1F1F] rounded-xl p-4">

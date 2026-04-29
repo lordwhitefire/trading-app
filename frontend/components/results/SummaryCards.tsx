@@ -7,40 +7,48 @@ interface Props {
 }
 
 export default function SummaryCards({ results }: Props) {
+  // ── Safe accessors — never crash even if a field is undefined ────────────
+  const totalSignals = results?.total_signals ?? 0;
+  const winRate = results?.win_rate ?? 0;
+  const totalReturnPct = results?.total_return_pct ?? 0;
+  const avgPnlPct = results?.avg_pnl_pct ?? 0;
+  const maxDrawdown = results?.max_drawdown_pct ?? 0;
+  const backtestPeriod = results?.backtest_period ?? 0;
+
   const cards = [
     {
       label: 'Total Signals',
-      value: results.total_signals,
+      value: totalSignals,
       format: (v: number) => v.toString(),
       color: 'text-white',
     },
     {
       label: 'Win Rate',
-      value: results.win_rate,
+      value: winRate,
       format: (v: number) => `${v.toFixed(1)}%`,
-      color: results.win_rate >= 50 ? 'text-[#22C55E]' : 'text-[#EF4444]',
+      color: winRate >= 50 ? 'text-[#22C55E]' : 'text-[#EF4444]',
     },
     {
       label: 'Total Return',
-      value: results.total_return_pct,
+      value: totalReturnPct,
       format: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
-      color: results.total_return_pct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]',
+      color: totalReturnPct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]',
     },
     {
       label: 'Avg PnL / Trade',
-      value: results.avg_pnl_pct,
+      value: avgPnlPct,
       format: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
-      color: results.avg_pnl_pct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]',
+      color: avgPnlPct >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]',
     },
     {
       label: 'Max Drawdown',
-      value: results.max_drawdown_pct,
+      value: maxDrawdown,
       format: (v: number) => `-${v.toFixed(2)}%`,
       color: 'text-[#EF4444]',
     },
     {
       label: 'Backtest Candles',
-      value: results.backtest_period,
+      value: backtestPeriod,
       format: (v: number) => v.toString(),
       color: 'text-[#9CA3AF]',
     },

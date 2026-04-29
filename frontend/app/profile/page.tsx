@@ -97,8 +97,8 @@ export default function ProfilePage() {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === tab
-                                ? 'bg-[#FACC15] text-black'
-                                : 'bg-[#0D0D0D] border border-[#1F1F1F] text-[#4B5563] hover:text-white'
+                            ? 'bg-[#FACC15] text-black'
+                            : 'bg-[#0D0D0D] border border-[#1F1F1F] text-[#4B5563] hover:text-white'
                             }`}
                     >
                         {tab === 'strategies' ? `⚙ Strategies (${savedStrategies.length})` : `📊 Results (${savedResults.length})`}
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                                     <div>
                                         <h3 className="text-white font-bold">{strategy.name}</h3>
                                         <div className="flex gap-3 mt-1 flex-wrap">
-                                            <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.coin}</span>
+                                            <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.coins?.length > 1 ? strategy.coins.join(', ') : strategy.coin}</span>
                                             <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.timeframe}</span>
                                             <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">{strategy.conditions?.length} conditions</span>
                                             <span className="text-[10px] text-[#4B5563] uppercase tracking-widest">

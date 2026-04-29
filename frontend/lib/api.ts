@@ -62,12 +62,14 @@ export const getAvailableCoins = async () => {
 export const chatWithResults = async (
   question: string,
   results: object,
-  signal?: object
+  signal?: object,
+  agent?: string        // ← NEW: pass agent key for structured responses
 ) => {
   const response = await apiClient.post('/api/chat/', {
     question,
     results,
     signal: signal || null,
+    agent: agent || null,  // ← NEW
   });
   return response.data;
 };
