@@ -43,19 +43,19 @@ const SINGLE_AGENTS = [
 
 const buildMultiAgents = (coins: string[]) => [
   {
-    key: 'comparison', icon: '⚖️', title: 'Coin Comparison', structured: false,
+    key: 'comparison', icon: '⚖️', title: 'Coin Comparison', structured: true,
     prompt: `Compare the backtest results across all coins: ${coins.join(', ')}. Rank them by win rate, total PnL, and number of trades. Explain why one coin may have outperformed the others.`
   },
   {
-    key: 'best_coin', icon: '🏆', title: 'Best Coin for This Strategy', structured: false,
+    key: 'best_coin', icon: '🏆', title: 'Best Coin for This Strategy', structured: true,
     prompt: `Given the backtest results for ${coins.join(', ')}, which single coin would you recommend running this strategy on live? Give a clear recommendation with reasoning.`
   },
   {
-    key: 'risk', icon: '⚠️', title: 'Risk Comparison', structured: false,
+    key: 'risk', icon: '⚠️', title: 'Risk Comparison', structured: true,
     prompt: `Analyze the risk profile of this strategy across ${coins.join(', ')}. Compare max drawdown, losing streaks, and volatility per coin.`
   },
   {
-    key: 'summary', icon: '🧠', title: 'Multi-Coin Strategy Summary', structured: false,
+    key: 'summary', icon: '🧠', title: 'Multi-Coin Strategy Summary', structured: true,
     prompt: `Give a comprehensive summary of how this strategy performs across ${coins.join(', ')}. Should the user run it on all coins simultaneously or focus on one?`
   },
 ];
@@ -265,6 +265,203 @@ function StructuredResult({ agentKey, data }: { agentKey: string; data: any }) {
     );
   }
 
+  // ── Coin Comparison ──
+  if (agentKey === 'comparison') {
+    return (
+      <div className="space-y-4 pt-4">
+        {data.summary && <SummaryCard text={data.summary} />}
+        {data.ranking?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-2">Coin Rankings</p>
+            <div className="space-y-2">
+              {data.ranking.map((item: any, i: number) => (
+                <div key={i} className="bg-[#111111] border border-[#1F1F1F] rounded-lg p-3 flex items-start gap-3">
+                  <span className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-black
+                    ${i === 0 ? 'bg-[#FACC15]/20 text-[#FACC15] border border-[#FACC15]/40'
+                      : i === 1 ? 'bg-[#9CA3AF]/10 text-[#9CA3AF] border border-[#9CA3AF]/30'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                    {item.rank}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-white font-bold text-sm">{item.coin}</span>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${Number(item.total_return_pct) >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {Number(item.total_return_pct) >= 0 ? '+' : ''}{Number(item.total_return_pct).toFixed(2)}%
+                      </span>
+                      <span className="text-[10px] text-[#4B5563]">{item.win_rate}% WR · {item.total_signals} signals</span>
+                    </div>
+                    <p className="text-[#9CA3AF] text-xs leading-relaxed">{item.insight}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {data.key_differences?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#FACC15] mb-2">Key Differences</p>
+            <Recommendations items={data.key_differences} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Best Coin ──
+  if (agentKey === 'best_coin') {
+    const confidenceCfg: Record<string, { bg: string; text: string; border: string }> = {
+      High: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/40' },
+      Medium: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/40' },
+      Low: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/40' },
+    };
+    const cc = confidenceCfg[data.confidence] ?? confidenceCfg['Medium'];
+    return (
+      <div className="space-y-4 pt-4">
+        {data.summary && <SummaryCard text={data.summary} />}
+        {data.recommended_coin && (
+          <div className="bg-[#FACC15]/5 border border-[#FACC15]/20 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">Recommended Coin</p>
+              <p className="text-[#FACC15] font-black text-xl">{data.recommended_coin}</p>
+            </div>
+            {data.confidence && (
+              <div className="text-right">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">Confidence</p>
+                <span className={`inline-flex px-3 py-1 rounded-full border text-xs font-black uppercase tracking-widest ${cc.bg} ${cc.text} ${cc.border}`}>
+                  {data.confidence}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        {data.reasons?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-green-400 mb-2">Why This Coin</p>
+            <CheckList items={data.reasons} type="strength" />
+          </div>
+        )}
+        {data.coins_to_avoid?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-red-400 mb-2">Coins to Avoid</p>
+            <div className="space-y-2">
+              {data.coins_to_avoid.map((item: any, i: number) => (
+                <div key={i} className="bg-red-500/5 border border-red-500/20 rounded-lg p-3 flex gap-3 items-start">
+                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shrink-0 bg-red-500/20 text-red-400">
+                    {item.coin}
+                  </span>
+                  <p className="text-[#9CA3AF] text-xs leading-relaxed">{item.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Risk Comparison ──
+  if (agentKey === 'risk') {
+    const riskColor: Record<string, string> = {
+      High: 'text-red-400', Medium: 'text-yellow-400', Low: 'text-green-400',
+    };
+    const riskBg: Record<string, string> = {
+      High: 'bg-red-500/10 border-red-500/20', Medium: 'bg-yellow-500/10 border-yellow-500/20', Low: 'bg-green-500/10 border-green-500/20',
+    };
+    return (
+      <div className="space-y-4 pt-4">
+        {data.summary && <SummaryCard text={data.summary} />}
+        <div className="grid grid-cols-2 gap-3">
+          {data.safest_coin && (
+            <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-green-400 mb-1">Safest</p>
+              <p className="text-white font-bold">{data.safest_coin}</p>
+            </div>
+          )}
+          {data.riskiest_coin && (
+            <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-red-400 mb-1">Riskiest</p>
+              <p className="text-white font-bold">{data.riskiest_coin}</p>
+            </div>
+          )}
+        </div>
+        {data.risk_ranking?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-2">Risk Breakdown</p>
+            <div className="space-y-2">
+              {data.risk_ranking.map((item: any, i: number) => (
+                <div key={i} className={`rounded-lg border p-3 flex items-start gap-3 ${riskBg[item.risk_level] ?? 'bg-[#111111] border-[#1F1F1F]'}`}>
+                  <div className="shrink-0 text-right min-w-[60px]">
+                    <p className={`text-xs font-black uppercase ${riskColor[item.risk_level] ?? 'text-[#9CA3AF]'}`}>{item.risk_level}</p>
+                    <p className="text-white font-bold text-sm">{item.coin}</p>
+                    <p className="text-[10px] text-[#4B5563]">{item.max_drawdown_pct}% DD</p>
+                  </div>
+                  <p className="text-[#9CA3AF] text-xs leading-relaxed">{item.insight}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {data.recommendations?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#FACC15] mb-2">Recommendations</p>
+            <Recommendations items={data.recommendations} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Multi-Coin Summary ──
+  if (agentKey === 'summary' && data.recommended_approach !== undefined) {
+    return (
+      <div className="space-y-4 pt-4">
+        {data.summary && <SummaryCard text={data.summary} />}
+        <div className="flex items-center gap-4 flex-wrap">
+          {data.overall_rating && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">Overall Rating</p>
+              <RatingBadge rating={data.overall_rating} />
+            </div>
+          )}
+          {data.recommended_approach && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">Approach</p>
+              <span className="inline-flex items-center px-3 py-1 rounded-full border border-[#FACC15]/30 bg-[#FACC15]/10 text-[#FACC15] text-xs font-bold uppercase tracking-widest">
+                {data.recommended_approach === 'all_coins' ? '📡 Run All Coins' : `🎯 Focus: ${data.recommended_coin ?? 'One Coin'}`}
+              </span>
+            </div>
+          )}
+        </div>
+        {data.strategy_verdict && (
+          <div className="bg-[#111111] border border-[#1F1F1F] rounded-lg px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4B5563] mb-1">Verdict</p>
+            <p className="text-white text-sm">{data.strategy_verdict}</p>
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {data.strengths?.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-green-400 mb-2">Strengths</p>
+              <CheckList items={data.strengths} type="strength" />
+            </div>
+          )}
+          {data.weaknesses?.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-red-400 mb-2">Weaknesses</p>
+              <CheckList items={data.weaknesses} type="weakness" />
+            </div>
+          )}
+        </div>
+        {data.recommendations?.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#FACC15] mb-2">Recommendations</p>
+            <Recommendations items={data.recommendations} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return null;
 }
 
@@ -300,6 +497,7 @@ export default function AIAnalysisPanel({ results, selectedSignal, isMultiCoin =
     setExpanded(prev => ({ ...prev, [key]: true }));
     try {
       // Pass agent key so backend appends the right schema
+      console.log('DEBUG runAgent:', { key, structured, agentArg: structured ? key : undefined }); 
       const res = await chatWithResults(prompt, aiContext, undefined, structured ? key : undefined);
       setAgentAnswers(prev => ({ ...prev, [key]: res.answer }));
       if (res.structured) {

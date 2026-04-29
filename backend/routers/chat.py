@@ -45,10 +45,58 @@ AGENT_SCHEMAS = {
     "indicator": INDICATOR_SCHEMA,
     "time": TIME_SCHEMA,
     "summary": SUMMARY_SCHEMA,
-    # multi-coin agents — return plain text (compared across coins, hard to schema)
-    "comparison": None,
-    "best_coin": None,
-    "risk": None,
+    # multi-coin agents — structured JSON
+    "comparison": """
+Return ONLY valid JSON in this exact format, no markdown, no explanation:
+{
+  "summary": "one sentence overall assessment",
+  "ranking": [
+    {"rank": 1, "coin": "BTC/USDT", "win_rate": 37.7, "total_return_pct": -395.99, "total_signals": 122, "insight": "why it ranked here"}
+  ],
+  "best_coin": "BTC/USDT",
+  "worst_coin": "ETH/USDT",
+  "key_differences": ["difference 1", "difference 2"]
+}
+""",
+    "best_coin": """
+Return ONLY valid JSON in this exact format, no markdown, no explanation:
+{
+  "summary": "one sentence recommendation",
+  "recommended_coin": "BTC/USDT",
+  "reasons": ["reason 1", "reason 2", "reason 3"],
+  "coins_to_avoid": [{"coin": "ETH/USDT", "reason": "why to avoid"}],
+  "confidence": "High"
+}
+Note: confidence must be exactly one of: "High", "Medium", or "Low".
+""",
+    "risk": """
+Return ONLY valid JSON in this exact format, no markdown, no explanation:
+{
+  "summary": "one sentence risk assessment",
+  "risk_ranking": [
+    {"coin": "BTC/USDT", "risk_level": "High", "max_drawdown_pct": 693.6, "insight": "why this risk level"}
+  ],
+  "safest_coin": "BTC/USDT",
+  "riskiest_coin": "ETH/USDT",
+  "recommendations": ["recommendation 1", "recommendation 2"]
+}
+Note: risk_level must be exactly one of: "High", "Medium", or "Low".
+""",
+    "summary": """
+Return ONLY valid JSON in this exact format, no markdown, no explanation:
+{
+  "summary": "one sentence overall assessment across all coins",
+  "overall_rating": "Poor",
+  "strategy_verdict": "one sentence verdict on running this strategy live",
+  "strengths": ["strength 1", "strength 2"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "recommended_approach": "all_coins or single_coin",
+  "recommended_coin": "BTC/USDT",
+  "recommendations": ["recommendation 1", "recommendation 2"]
+}
+Note: overall_rating must be exactly one of: "Good", "Average", or "Poor".
+Note: recommended_approach must be exactly "all_coins" or "single_coin".
+""",
 }
 
 
