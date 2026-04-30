@@ -1,12 +1,10 @@
 fastapi
 uvicorn
 pydantic
-pandas
-pandas-ta
+pandas==2.1.4
+pandas-ta==0.3.14b
+numpy==1.26.4
 requests
 httpx
-crewai
-crewai-tools
-google-generativeai
-pyngrok
 python-dotenv
+supabase
