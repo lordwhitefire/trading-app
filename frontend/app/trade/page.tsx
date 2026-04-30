@@ -166,7 +166,7 @@ export default function TradePage() {
     useEffect(() => {
         if (!openTrades.length) return;
         const fetchPrices = async () => {
-            const coins = [...new Set(openTrades.map((t: any) => t.coin))];
+            const coins = Array.from(new Set(openTrades.map((t: any) => t.coin)));
             const results: Record<string, number> = {};
             await Promise.all(coins.map(async (coin: any) => {
                 try {
@@ -260,9 +260,9 @@ export default function TradePage() {
     const winRate = closedTrades.length > 0 ? (wins / closedTrades.length) * 100 : 0;
 
     // ── Filters ───────────────────────────────────────────────────────────────
-    const strategies = [...new Set(closedTrades.map((t: any) => t.strategy_name).filter(Boolean))];
-    const coins = [...new Set(closedTrades.map((t: any) => t.coin))];
-    const tradeDates = [...new Set(closedTrades.map((t: any) => fmtDate(t.opened_at)))];
+    const strategies = Array.from(new Set(closedTrades.map((t: any) => t.strategy_name).filter(Boolean)));
+    const coins = Array.from(new Set(closedTrades.map((t: any) => t.coin)));
+    const tradeDates = Array.from(new Set(closedTrades.map((t: any) => fmtDate(t.opened_at))));
 
     const filtered = closedTrades.filter((t: any) => {
         if (filterStrategy && t.strategy_name !== filterStrategy) return false;

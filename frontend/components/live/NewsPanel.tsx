@@ -174,9 +174,9 @@ const fmtCount = (n: number): string => {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function NewsPanel({ coin, coins }: NewsPanelProps) {
-  const allCoins = [
-    ...new Set([...(coins ?? []), ...(coin ? [coin] : [])].map(parseBase)),
-  ];
+  const allCoins = Array.from(
+    new Set([...(coins ?? []), ...(coin ? [coin] : [])].map(parseBase))
+  );
   const primaryCoin = allCoins[0] ?? "BTC";
 
   const [activeTab, setActiveTab] = useState(primaryCoin);
