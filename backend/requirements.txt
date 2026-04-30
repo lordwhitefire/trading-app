@@ -5,6 +5,6 @@ requests
 httpx
 python-dotenv
 supabase
-pandas==2.2.2
-numpy==1.26.4
+pandas==3.0.2
+numpy==2.2.6
 pandas-ta==0.4.71b0
