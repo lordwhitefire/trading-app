@@ -8,5 +8,5 @@ httpx
 crewai
 crewai-tools
 google-generativeai
-pyngrok
 python-dotenv
+supabase

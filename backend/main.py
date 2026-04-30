@@ -8,7 +8,8 @@ import uvicorn
 from backend.routers import (
     backtest, live, news, etf,
     translator, indicators, patterns,
-    levels, warnings, coins, chat
+    levels, warnings, coins, chat,
+    trade
 )
 
 app = FastAPI(title="AlphaDesk", version="1.0.0")
@@ -32,6 +33,7 @@ app.include_router(levels.router)
 app.include_router(warnings.router)
 app.include_router(coins.router)
 app.include_router(chat.router)
+app.include_router(trade.router)
 
 @app.get("/")
 def health_check():
