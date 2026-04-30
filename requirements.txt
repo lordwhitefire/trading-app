@@ -1,10 +1,10 @@
 fastapi
 uvicorn
 pydantic
-pandas==2.1.4
-pandas-ta==0.3.14b0
-numpy==1.26.4
 requests
 httpx
 python-dotenv
 supabase
+pandas==2.2.2
+numpy==1.26.4
+git+https://github.com/twopirllc/pandas-ta.git@development

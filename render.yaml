@@ -9,3 +9,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
+
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
