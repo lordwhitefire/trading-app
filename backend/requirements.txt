@@ -7,4 +7,4 @@ python-dotenv
 supabase
 pandas==2.2.2
 numpy==1.26.4
-https://github.com/twopirllc/pandas-ta/archive/refs/heads/development.tar.gz
+pandas-ta==0.3.14b0
