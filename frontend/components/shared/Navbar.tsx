@@ -26,7 +26,7 @@ export default function Navbar() {
       provider: 'google',
       options: {
         redirectTo: typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
-          ? 'com.alphaDesk.app://auth/callback'
+          ? 'com.alphadeskapp://auth/callback'
           : `${window.location.origin}/auth/callback`,
       },
     });
