@@ -25,7 +25,9 @@ export default function Navbar() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
+          ? 'com.alphaDesk.app://auth/callback'
+          : `${window.location.origin}/auth/callback`,
       },
     });
   };
