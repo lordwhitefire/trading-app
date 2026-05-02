@@ -17,11 +17,28 @@ export default function LivePage() {
   const [loading, setLoading] = useState(false);
   const [lastChecked, setLastChecked] = useState<string>('');
   const [error, setError] = useState('');
-  // ── NEW: scanning state ──
   const [isScanning, setIsScanning] = useState(true);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
+
+  const sendNotification = (signal: any) => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification(`🚨 ${signal.coin} Signal Detected!`, {
+        body: `${signal.direction?.toUpperCase()} @ $${signal.entry_price} | Confidence: ${signal.confidence?.toFixed(1)}%`,
+        icon: '/favicon.ico',
+      });
+    }
+  };
 
   const checkSignal = async () => {
     if (!activeStrategy) return;
@@ -36,6 +53,7 @@ export default function LivePage() {
         };
         setSignals(prev => [signalWithTime, ...prev].slice(0, 20));
         addLiveSignal(signalWithTime);
+        sendNotification(signalWithTime);
       }
       setLastChecked(new Date().toLocaleTimeString('en-GB'));
     } catch (e: any) {
@@ -45,7 +63,6 @@ export default function LivePage() {
     }
   };
 
-  // ── NEW: start/stop helpers ──
   const stopScanning = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (countdownRef.current) clearInterval(countdownRef.current);
@@ -55,7 +72,7 @@ export default function LivePage() {
   };
 
   const startScanning = () => {
-    if (intervalRef.current) return; // already running
+    if (intervalRef.current) return;
     setIsScanning(true);
     setCountdown(REFRESH_INTERVAL);
     checkSignal();
@@ -103,10 +120,8 @@ export default function LivePage() {
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8">
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-white font-black text-3xl uppercase tracking-tight flex items-center gap-3">
-          {/* Live/paused indicator dot */}
           <span className="relative flex h-3 w-3">
             {isScanning && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -120,22 +135,17 @@ export default function LivePage() {
           {loading && (
             <span className="text-[#FACC15] text-xs uppercase tracking-widest animate-pulse">Checking...</span>
           )}
-
           {isScanning && (
             <span className="text-[#4B5563] text-xs font-mono uppercase tracking-widest">
               Refresh in: {countdown}s
             </span>
           )}
-
-          {/* Check Now — only when scanning */}
           {isScanning && (
             <button onClick={checkSignal} disabled={loading}
               className="text-xs border border-[#1F1F1F] hover:border-[#FACC15] text-[#4B5563] hover:text-[#FACC15] px-3 py-1.5 rounded-lg uppercase tracking-widest transition-colors disabled:opacity-40">
               ↻ Check Now
             </button>
           )}
-
-          {/* ── Stop / Resume toggle ── */}
           {isScanning ? (
             <button onClick={stopScanning}
               className="text-xs border border-red-500/40 hover:border-red-500 text-red-400/70 hover:text-red-400 px-4 py-1.5 rounded-lg uppercase tracking-widest transition-colors font-semibold">
@@ -150,7 +160,6 @@ export default function LivePage() {
         </div>
       </div>
 
-      {/* Active strategy banner */}
       <div className={`bg-[#0D0D0D] border rounded-xl p-4 mb-6 flex items-center justify-between transition-colors
         ${isScanning ? 'border-[#FACC15]/20' : 'border-[#1F1F1F]'}`}>
         <div>
@@ -176,14 +185,12 @@ export default function LivePage() {
         </div>
       </div>
 
-      {/* Error */}
       {error && (
         <div className="bg-red-900/20 border border-red-800 text-red-400 rounded-lg p-4 text-sm mb-6">
           {error}
         </div>
       )}
 
-      {/* Signal Cards */}
       <div className="mb-8">
         {signals.length === 0 && !loading ? (
           <div className="border border-dashed border-[#1F1F1F] rounded-xl p-10 text-center">
@@ -200,7 +207,6 @@ export default function LivePage() {
         )}
       </div>
 
-      {/* News and ETF */}
       <NewsPanel coin={activeStrategy?.coin} coins={activeStrategy?.coins} />
       <ETFPanel coin={activeStrategy?.coin} coins={activeStrategy?.coins} />
 
