@@ -7,7 +7,7 @@ router = APIRouter()
 async def get_available_coins():
     try:
         response = requests.get(
-            "https://api.bybit.com/v5/market/instruments-info",
+            "https://bybit-proxy.alphadeskproxy.workers.dev/v5/market/instruments-info",
             params={"category": "spot"},
             timeout=10
         )

@@ -102,7 +102,7 @@ async def get_price(coin: str):
     if not symbol.endswith("USDT"):
         symbol = symbol + "USDT"
 
-    url = f"https://api.bybit.com/v5/market/tickers?category=spot&symbol={symbol}"
+    url = f"https://bybit-proxy.alphadeskproxy.workers.dev/v5/market/tickers?category=spot&symbol={symbol}"
     async with httpx.AsyncClient(timeout=10) as client:
         resp = await client.get(url)
 
