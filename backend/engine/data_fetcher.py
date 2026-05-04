@@ -6,7 +6,7 @@ from backend.models.strategy import Strategy
 from backend.utils.candle_calculator import calculate_candles_needed
 
 SOSOVALUE_API_KEY = os.getenv('SOSOVALUE_API_KEY')
-BYBIT_BASE_URL = "https://api.bybit.com"
+BYBIT_BASE_URL = "https://bybit-proxy.alphadeskproxy.workers.dev"
 SOSOVALUE_BASE_URL = "https://openapi.sosovalue.com"
 
 TIMEFRAME_MAP = {
