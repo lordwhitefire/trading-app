@@ -162,20 +162,22 @@ export default function TradePage() {
 
     useEffect(() => { loadTrades(); }, [loadTrades]);
 
-    // ── Poll live prices every 10 s ───────────────────────────────────────────
+    // ── Poll live prices every 10 s via Cloudflare proxy ────────────────────
     useEffect(() => {
         if (!openTrades.length) return;
+        const BYBIT_PROXY = 'https://bybit-proxy.alphadeskproxy.workers.dev';
         const fetchPrices = async () => {
             const coins = Array.from(new Set(openTrades.map((t: any) => t.coin)));
             const results: Record<string, number> = {};
             await Promise.all(coins.map(async (coin: any) => {
                 try {
-                    const r = await fetch(`${API}/api/trade/price/${coin}`);
+                    const symbol = coin.toUpperCase().endsWith('USDT') ? coin.toUpperCase() : `${coin.toUpperCase()}USDT`;
+                    const r = await fetch(`${BYBIT_PROXY}/v5/market/tickers?category=spot&symbol=${symbol}`);
                     const d = await r.json();
-                    results[coin] = d.price;
+                    const price = parseFloat(d?.result?.list?.[0]?.lastPrice);
+                    if (!isNaN(price)) results[coin] = price;
                 } catch { /* silent */ }
             }));
-            // map to trade IDs
             const byId: Record<string, number> = {};
             openTrades.forEach((t: any) => {
                 if (results[t.coin]) byId[t.id] = results[t.coin];
