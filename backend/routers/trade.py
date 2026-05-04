@@ -3,6 +3,9 @@ from pydantic import BaseModel
 from typing import Optional, List, Any
 import httpx
 import os
+import time
+import hmac
+import hashlib
 from supabase import create_client, Client
 
 router = APIRouter(prefix="/api/trade", tags=["trade"])
@@ -12,6 +15,27 @@ supabase: Client = create_client(
     os.environ["SUPABASE_SERVICE_KEY"],
 )
 
+BYBIT_API_KEY = os.getenv('BYBIT_API_KEY', '')
+BYBIT_API_SECRET = os.getenv('BYBIT_API_SECRET', '')
+
+def _bybit_headers(params: dict) -> dict:
+    if not BYBIT_API_KEY or not BYBIT_API_SECRET:
+        return {}
+    timestamp = str(int(time.time() * 1000))
+    recv_window = "20000"
+    query_string = "&".join([f"{k}={v}" for k, v in sorted(params.items())])
+    sign_str = f"{timestamp}{BYBIT_API_KEY}{recv_window}{query_string}"
+    signature = hmac.new(
+        BYBIT_API_SECRET.encode('utf-8'),
+        sign_str.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    return {
+        'X-BAPI-API-KEY': BYBIT_API_KEY,
+        'X-BAPI-TIMESTAMP': timestamp,
+        'X-BAPI-SIGN': signature,
+        'X-BAPI-RECV-WINDOW': recv_window,
+    }
 
 # ---------- Schemas ----------
 
@@ -27,13 +51,11 @@ class CreateTradeRequest(BaseModel):
     conditions_triggered: Optional[List[Any]] = []
     strategy_name: Optional[str] = None
 
-
 class CloseTradeRequest(BaseModel):
     exit_price: float
-    outcome: str          # "WIN" | "LOSS" | "MANUAL"
+    outcome: str
     pnl_pct: float
     pnl_usd: float
-
 
 # ---------- Endpoints ----------
 
@@ -60,7 +82,6 @@ async def create_trade(body: CreateTradeRequest):
         raise HTTPException(status_code=500, detail="Failed to create trade")
     return result.data[0]
 
-
 @router.get("/")
 async def get_trades(user_id: str):
     result = (
@@ -72,11 +93,9 @@ async def get_trades(user_id: str):
     )
     return result.data or []
 
-
 @router.put("/{trade_id}/close")
 async def close_trade(trade_id: str, body: CloseTradeRequest):
     from datetime import datetime, timezone
-
     result = (
         supabase.table("paper_trades")
         .update({
@@ -94,17 +113,18 @@ async def close_trade(trade_id: str, body: CloseTradeRequest):
         raise HTTPException(status_code=404, detail="Trade not found")
     return result.data[0]
 
-
 @router.get("/price/{coin}")
 async def get_price(coin: str):
-    """Fetch live spot price from Bybit for a given coin, e.g. BTC → BTCUSDT."""
     symbol = coin.upper()
     if not symbol.endswith("USDT"):
         symbol = symbol + "USDT"
 
-    url = f"https://bybit-proxy.alphadeskproxy.workers.dev/v5/market/tickers?category=spot&symbol={symbol}"
+    params = {"category": "spot", "symbol": symbol}
+    headers = _bybit_headers(params)
+    url = f"https://api.bybit.com/v5/market/tickers?category=spot&symbol={symbol}"
+
     async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url)
+        resp = await client.get(url, headers=headers)
 
     if resp.status_code != 200:
         raise HTTPException(status_code=502, detail="Bybit API error")
