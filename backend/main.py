@@ -9,7 +9,7 @@ from backend.routers import (
     backtest, live, news, etf,
     translator, indicators, patterns,
     levels, warnings, coins, chat,
-    trade
+    trade, device
 )
 
 app = FastAPI(title="AlphaDesk", version="1.0.0")
@@ -34,6 +34,7 @@ app.include_router(warnings.router)
 app.include_router(coins.router)
 app.include_router(chat.router)
 app.include_router(trade.router)
+app.include_router(device.router)
 
 @app.get("/")
 def health_check():
