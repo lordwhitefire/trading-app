@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { fireDeviceEvent, listenDeviceResponse } from '@/lib/bridge';
 import {
   runBacktest,
   getAvailableIndicators,
@@ -312,16 +313,51 @@ export default function BuilderPage() {
     if (conditions.length === 0) { setError('Add at least one condition.'); return; }
     if (stopLossPct >= maxSafeSL) { setError(`Stop loss must be less than ${maxSafeSL}% for ${leverage}x leverage.`); return; }
     setLoading(true); setError('');
-    try {
-      const strategy = buildStrategy();
-      const results = await runBacktest(strategy);
-      setBacktestResults(results);
-      addStrategy(strategy);
-      router.push('/results');
-      if (user) await saveResultsToDB(strategy, results);
-    } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to run backtest.');
-    } finally { setLoading(false); }
+
+    const strategy = buildStrategy();
+
+    // Fire event for native layer to fetch OHLCV from device storage
+    fireDeviceEvent('runBacktest', {
+      strategy,
+      coins,
+      timeframe,
+      backtest_period: backtestPeriod,
+    });
+
+    // Wait for native response with candle data
+    const unsubscribe = listenDeviceResponse(async (action, data) => {
+      if (action === 'backtestDataReady') {
+        try {
+          const results = await runBacktest({
+            ...strategy,
+            ...(data.candles ? { device_candles: data.candles } : {}),
+          });
+          setBacktestResults(results);
+          addStrategy(strategy);
+          router.push('/results');
+          if (user) await saveResultsToDB(strategy, results);
+        } catch (err: any) {
+          setError(err?.response?.data?.detail || 'Failed to run backtest.');
+        } finally {
+          setLoading(false);
+          unsubscribe();
+        }
+      }
+    });
+
+    // Fallback: if no native layer responds within 3s, run directly
+    setTimeout(async () => {
+      if (!loading) return; // already resolved
+      try {
+        const results = await runBacktest(strategy);
+        setBacktestResults(results);
+        addStrategy(strategy);
+        router.push('/results');
+        if (user) await saveResultsToDB(strategy, results);
+      } catch (err: any) {
+        setError(err?.response?.data?.detail || 'Failed to run backtest.');
+      } finally { setLoading(false); }
+    }, 3000);
   };
 
   const isValid = name.trim() && coins.length > 0 && conditions.length > 0 && stopLossPct < maxSafeSL;

@@ -3,12 +3,12 @@
 import React, { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/lib/store';
+import { fireDeviceEvent } from '@/lib/bridge';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const { setUser, loadUserData, user } = useStore();
 
     useEffect(() => {
-        // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 setUser(session.user);
@@ -16,7 +16,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             }
         });
 
-        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 if (session?.user) {
@@ -31,13 +30,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         return () => subscription.unsubscribe();
     }, []);
 
-    // Notify native layer when user changes
     useEffect(() => {
-        if (user && typeof window !== 'undefined' && (window as any).AlphaDeskBridge) {
-            (window as any).AlphaDeskBridge.postMessage(JSON.stringify({
-                action: 'setUserId',
-                payload: { userId: user.id }
-            }));
+        if (user) {
+            fireDeviceEvent('authStateChange', {
+                user_id: user.id,
+                email: user.email,
+            });
+        } else {
+            fireDeviceEvent('authStateChange', {
+                user_id: null,
+            });
         }
     }, [user]);
 

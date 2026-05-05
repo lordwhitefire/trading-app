@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useStore } from '@/lib/store';
+import { fireDeviceEvent, listenDeviceResponse } from '@/lib/bridge';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -247,13 +248,27 @@ export default function TradePage() {
 
     // ── Manual close ─────────────────────────────────────────────────────────
     const handleClose = async (exitPrice: number, pnl_pct: number, pnl_usd: number) => {
-        await fetch(`${API}/api/trade/${closing.id}/close`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ exit_price: exitPrice, outcome: 'MANUAL', pnl_pct, pnl_usd }),
-        });
+        const tradeToClose = closing;
         setClosing(null);
-        loadTrades();
+
+        fireDeviceEvent('closeTradeManual', {
+            trade_id: tradeToClose.id,
+            bybit_order_id: tradeToClose.bybit_order_id,
+            coin: tradeToClose.coin,
+            exit_price: exitPrice,
+        });
+
+        const unsubscribe = listenDeviceResponse(async (action, data) => {
+            if (action === 'closeTradeResponse' && data.trade_id === tradeToClose.id) {
+                await fetch(`${API}/api/trade/${tradeToClose.id}/close`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exit_price: exitPrice, outcome: 'MANUAL', pnl_pct, pnl_usd }),
+                });
+                loadTrades();
+                unsubscribe();
+            }
+        });
     };
 
     // ── Account summary math ─────────────────────────────────────────────────

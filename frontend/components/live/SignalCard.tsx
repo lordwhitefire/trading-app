@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { fireDeviceEvent, listenDeviceResponse } from '@/lib/bridge';
 
 interface Signal {
   coin: string;
@@ -17,11 +18,14 @@ interface Signal {
   take_profit_price?: number;
   conditions_triggered?: string[];
   strategy_name?: string;
+  leverage?: number;
+  amount?: number;
 }
 
 export default function SignalCard({ signal }: { signal: Signal }) {
   const router = useRouter();
   const { setTradeToLog } = useStore();
+  const [pending, setPending] = useState(false);
 
   const direction = (signal.direction || 'LONG').toUpperCase();
   const isLong = direction === 'LONG';
@@ -30,6 +34,7 @@ export default function SignalCard({ signal }: { signal: Signal }) {
   const timestamp = signal.timestamp || signal.time || '';
 
   const handlePlaceTrade = () => {
+    setPending(true);
     setTradeToLog({
       coin: signal.coin,
       direction: signal.direction,
@@ -40,7 +45,29 @@ export default function SignalCard({ signal }: { signal: Signal }) {
       conditions_triggered: signal.conditions_triggered || [],
       strategy_name: signal.strategy_name || '',
     });
-    router.push('/trade');
+
+    fireDeviceEvent('placeTrade', {
+      signal_price: entryPrice,
+      take_profit_price: signal.take_profit_price,
+      stop_loss_price: signal.stop_loss_price,
+      coin: signal.coin,
+      direction: signal.direction,
+      strategy_name: signal.strategy_name,
+      leverage: signal.leverage || 1,
+      amount: signal.amount || 100,
+    });
+
+    const unsubscribe = listenDeviceResponse((action, data) => {
+      if (action === 'placeTradeResponse') {
+        setPending(false);
+        if (data.status === 'success') {
+          router.push('/trade');
+        } else {
+          alert(`Trade failed: ${data.error}`);
+        }
+        unsubscribe();
+      }
+    });
   };
 
   return (
@@ -117,9 +144,20 @@ export default function SignalCard({ signal }: { signal: Signal }) {
       {/* Place Trade button */}
       <button
         onClick={handlePlaceTrade}
-        className="mt-4 w-full flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-[#FDD047] text-black font-bold text-xs uppercase tracking-widest py-2.5 rounded-lg transition-colors"
+        disabled={pending}
+        className="mt-4 w-full flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-[#FDD047] disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold text-xs uppercase tracking-widest py-2.5 rounded-lg transition-colors"
       >
-        Place Trade →
+        {pending ? (
+          <>
+            <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            Placing...
+          </>
+        ) : (
+          'Place Trade →'
+        )}
       </button>
     </div>
   );
