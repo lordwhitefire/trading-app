@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-black text-white font-sans antialiased">
         <AuthProvider>
           <Navbar />
-          <main className="pt-16 pb-20">
+          <main className="pt-16 pb-20 md:pb-0">
             {children}
           </main>
         </AuthProvider>
