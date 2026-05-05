@@ -6,15 +6,6 @@ const apiClient = axios.create({
 
 const BYBIT_PROXY = 'https://bybit-proxy.alphadeskproxy.workers.dev';
 
-export const getBybitPrice = async (coin: string) => {
-  const symbol = coin.replace('/', '').toUpperCase();
-  if (!symbol.endsWith('USDT')) {
-    const response = await axios.get(`${BYBIT_PROXY}/v5/market/tickers?category=spot&symbol=${symbol}USDT`);
-    return response.data;
-  }
-  const response = await axios.get(`${BYBIT_PROXY}/v5/market/tickers?category=spot&symbol=${symbol}`);
-  return response.data;
-};
 
 export const translateStrategy = async (text: string) => {
   const response = await apiClient.post('/api/translator/', { text });
@@ -83,5 +74,15 @@ export const chatWithResults = async (
     signal: signal || null,
     agent: agent || null,
   });
+  return response.data;
+};
+
+export const getDevicePrices = async () => {
+  const response = await apiClient.get('/api/device/prices');
+  return response.data;
+};
+
+export const getDevicePositions = async () => {
+  const response = await apiClient.get('/api/device/positions');
   return response.data;
 };

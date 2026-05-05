@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useStore } from '@/lib/store';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { setUser, loadUserData } = useStore();
+    const { setUser, loadUserData, user } = useStore();
 
     useEffect(() => {
         // Get initial session
@@ -30,6 +30,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
         return () => subscription.unsubscribe();
     }, []);
+
+    // Notify native layer when user changes
+    useEffect(() => {
+        if (user && typeof window !== 'undefined' && (window as any).AlphaDeskBridge) {
+            (window as any).AlphaDeskBridge.postMessage(JSON.stringify({
+                action: 'setUserId',
+                payload: { userId: user.id }
+            }));
+        }
+    }, [user]);
 
     return <>{children}</>;
 }
